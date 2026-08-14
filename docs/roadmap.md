@@ -84,30 +84,59 @@ matrix cache demonstrably hits on rerun; the evaluation verdict is in `status.md
 
 ---
 
-## Milestone 4 — Shortlist refinement
+## Milestone 4 — Shortlist refinement — RE-SCOPED, closed (2026-08-14)
 
-**Goal:** spend precision only where it changes the answer.
+Both halves of the original plan dissolved on contact with reality:
 
-- [ ] Identify the 15–20 Pokémon that recur across the top-scoring teams
-- [ ] Go back and scan *those* via the appraisal screen for exact IVs
-- [ ] While there, record their *actual* movesets by hand (the CSV export has
-      none) and rerun with real moves instead of assumed ranked movesets
-- [ ] Rerun; compare team rankings before and after
+- **The exact-IV appraisal pass is unnecessary.** The Scan Pro export already
+  carries exact IVs for every scan (verified in M2+3) — there is no precision
+  gap for an appraisal pass to close.
+- **The hand-recorded-moveset pass is declined (user decision).** Real moves
+  are manual either way: the export's `Quick Move`/`Charge Move`/`Charge
+  Move 2` columns are present but empty, and automating against the game
+  client is forbidden by hard constraint 1. Not worth a dedicated pass — the
+  tool keeps scoring with PvPoke's ranked movesets and reporting multiple top
+  teams with costs; the user filters against reality themselves.
 
-The comparison is worth recording: it tells you empirically how much IV precision
-actually moves team selection, which informs whether this step is ever worth
-repeating.
+What replaces it, already in practice:
+
+- **Opportunistic move corrections.** When the user states a mon's actual
+  moves in conversation, analysis uses them (session (f): Dewgong's owned
+  legacy moves changed cost advice; Altaria Moonblast-vs-Flamethrower was
+  simulated both ways and changed the recommendation). Fold into a small
+  tracked overrides file if these accumulate.
+- **A possible cheap ingestion path, unverified:** Poke Genie allows manual
+  move entry per mon in-app. If moves entered there flow into the export's
+  move columns, shortlist movesets become a one-time in-app chore and the
+  pipeline reads them forever after. Minimal test in
+  `reference/open-questions.md`; if it works, carrying the columns through
+  the parser is small work.
 
 ---
 
-## Milestone 5 — Sharpening
+## Milestone 5 — Sharpening — ACTIVE NEXT (/plan target)
 
-Roughly in value order:
+Promoted by user request (2026-08-14): **Ultra League first**, then Master.
+Known code touchpoints for the league generalisation: `PvpokeSim` hardcodes
+`setCP(1500)` in its constructor; `selectReadyCandidates` hardcodes the 1500
+cap; `loadRankings1500` is GL-only (rankings-2500/10000/500 are already
+vendored); `species-list` emits only the GL search string (a UL string drives
+the next scanning pass — scans are additive, never wipe Poke Genie);
+report/tier labels assume GL. The matrix cache already keys on every input
+that changes. The export's `(U)` league block gives the same free per-scan
+oracle that validated GL. Master expectation: XL-legendary territory —
+"ready now" will be thin and the valuable output is investment advice.
 
-- [ ] Meta frequency weighting from real usage data rather than uniform weights
+Roughly in value order (Ultra/Master promoted to the top by the user):
+
+- [ ] Ultra League (then Master) — league parameter through the stack, UL
+      search string, UL report
+- [ ] Scoring-tuning items carried from the ⭐ checkpoint (see status.md):
+      bulk component, coverage linearity, viability-cutoff width, per-core
+      presentation diversity
 - [ ] "What should I invest in?" output — which unowned Pokémon, second charged move
       unlocks, or XL candy investments would most improve the best achievable team
-- [ ] Ultra and Master League
+- [ ] Meta frequency weighting from real usage data rather than uniform weights
 - [ ] Cup / limited formats (the `groups/` definitions in the PvPoke repo)
 - [ ] Team ordering recommendations (which member leads) rather than just the set
 

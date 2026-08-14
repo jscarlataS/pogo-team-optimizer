@@ -149,6 +149,11 @@ const ROLE_PERMUTATIONS: ReadonlyArray<readonly [number, number, number]> = [
 
 const EPSILON = 1e-6;
 
+// The vendor computes neutral dual-type matchups as products like 1.6 × 0.625,
+// which lands at 1.0000000149 — strictly greater than 1. A real weakness is
+// ≥1.6, so anything below this threshold is neutrality plus float noise.
+const WEAKNESS_THRESHOLD = 1.1;
+
 export function scoreTeam(
   team: readonly [MemberProfile, MemberProfile, MemberProfile],
   meta: MetaProfile,
@@ -178,7 +183,9 @@ export function scoreTeam(
   const sharedWeaknesses: string[] = [];
   let weaknessPenalty = 0;
   for (const type of Object.keys(team[0].defensiveMultipliers)) {
-    const weakCount = team.filter((p) => (p.defensiveMultipliers[type] ?? 1) > 1).length;
+    const weakCount = team.filter(
+      (p) => (p.defensiveMultipliers[type] ?? 1) > WEAKNESS_THRESHOLD,
+    ).length;
     if (weakCount === 3) {
       sharedWeaknesses.push(type);
       weaknessPenalty += config.weaknessPenalties.triple;

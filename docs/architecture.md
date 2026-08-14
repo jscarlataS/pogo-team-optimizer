@@ -146,8 +146,14 @@ no move data at all, so simulating "the moveset the user actually has" is
 impossible from this input. Decision (2026-08-14, confirmed by the user):
 simulate every candidate with **PvPoke's ranked moveset** and treat the
 report as the TM shopping list — second-move unlock dust and Elite-TM needs
-are itemised per member. Actual movesets get recorded by hand for the
-shortlist in Milestone 4 and the runs repeated with real moves.
+are itemised per member.
+
+Follow-up decision (2026-08-14, M4 re-scope): the planned hand-recording
+pass is dropped; the ranked-moveset assumption is standing policy.
+User-stated real moves are applied ad hoc in analysis when they matter (they
+flipped one recommendation: Moonblast Altaria), and the possible Poke Genie
+in-app-entry → export ingestion path is tracked in
+`reference/open-questions.md`.
 
 ---
 
@@ -244,6 +250,19 @@ For each recommended team:
 
 Also surface roster-level advice: "unlocking a second charged move on X appears in
 N of your top 20 teams" is high-value output for deciding where to spend dust.
+
+**`npm run rate` (`src/cli/rate.ts`)** is the inverse tool: instead of
+searching, it grades a hand-picked team (or profiles single mons) with the
+same scoring function, looking species up in the **full** rankings so
+off-meta picks outside the top-100 viability pool are still gradeable.
+`--pool-top N` additionally ranks the team against every team the roster
+could field. Scores are directly comparable to the optimize report.
+
+One scoring subtlety lives in `src/score.ts`: the vendor's type-effectiveness
+multipliers are float32, so a neutral dual-type matchup computes as
+1.6 × 0.625 = 1.0000000149. The weakness component therefore counts a
+weakness only above `WEAKNESS_THRESHOLD = 1.1` (a real weakness is ≥ 1.6);
+comparing `> 1` counts phantom weaknesses and mis-ranks teams.
 
 ---
 

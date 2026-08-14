@@ -94,6 +94,21 @@ describe("scoreTeam", () => {
     expect(triple.sharedWeaknesses).toEqual(["fire"]);
   });
 
+  it("ignores the vendor's float-noise neutral multipliers (1.6 × 0.625 > 1)", () => {
+    // Real vendor value for a neutral dual-type matchup (ice vs fire/flying):
+    // the vendor's 1.6 is a float32, so the product lands just above 1.
+    const noisyNeutral = Math.fround(1.6) * 0.625; // 1.0000000149…
+    expect(noisyNeutral).toBeGreaterThan(1);
+    const team: typeof perfect = [
+      mkMember({ speciesId: "a", index: 0, defensiveMultipliers: { ice: noisyNeutral } }),
+      mkMember({ speciesId: "b", index: 1, defensiveMultipliers: { ice: noisyNeutral } }),
+      mkMember({ speciesId: "c", index: 2, defensiveMultipliers: { ice: noisyNeutral } }),
+    ];
+    const s = scoreTeam(team, meta);
+    expect(s.components.weakness).toBeCloseTo(1, 9);
+    expect(s.sharedWeaknesses).toEqual([]);
+  });
+
   it("weights opponents by the meta profile", () => {
     const lopsided: MetaProfile = { ids: ["o1", "o2"], weights: [0.9, 0.1] };
     const team: typeof perfect = [

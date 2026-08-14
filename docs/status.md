@@ -1,10 +1,13 @@
 # Status
 
 **Last updated:** 2026-08-14
-**Current milestone:** 2+3 (merged) — pipeline complete and running on the real
-roster; **awaiting the user's evaluation-checkpoint verdict** on the tiered
-team report (the user will open the next session with that feedback — start
-there; all docs are synced as of the end of session (e))
+**Current milestone:** 2+3 **CLOSED — ⭐ checkpoint verdict positive**: the
+user adopted the recommended Altaria+Clefable+Stunfisk(G) team (keeping
+Moonblast on Altaria, a deliberate 79.5-vs-79.7 trade) and reports it
+performing very well in GBL. M4 re-scoped away by user decision (roadmap).
+**Next: /plan Milestone 5 — Ultra League first** (touchpoints in roadmap).
+Current roster file: `data/poke_genie_export_updated.csv` (158 scans) — the
+CLIs still *default* to the older `poke_genie_export.csv`; pass `--roster`.
 
 ---
 
@@ -62,10 +65,23 @@ pool), and *ready now* (current form at current level, zero investment; own
 builds via the harness's `exactLevel` mode + own cached matrix). Ready-now
 builds must reproduce the scanned CP exactly — a live cross-check of species
 resolution and vendored base stats against the game, passing for all 149 rows.
-Real run: pools 41/14/25; headline teams **Sableye(S)+Clefable+Charjabug 81.8**
-(optimal), **Clefable+Seaking+Hydreigon 79.8** (budget — the L15 Deino evolves
-into a legal 1459 CP GL Hydreigon with zero power-ups), **Ninetales+Blastoise+
-Clefable 79.4** (ready now, all three already 1450+).
+Real run (updated CSV, post weakness-threshold fix): pools 41/14/25; headline
+teams **Sableye(S)+Clefable+Charjabug 81.8** (optimal),
+**Fearow+Clefable+Stunfisk(G) 80.7** (budget), **Altaria+Clefable+Stunfisk(G)
+79.7** (ready now — two of the three are mons the user already fields).
+
+**Weakness-component bug found and fixed (session f):** the vendor's type
+multipliers are float32, so neutral dual-type matchups compute as
+1.6 × 0.625 = 1.0000000149 — strictly > 1 — and the scorer counted them as
+weaknesses (phantom double/triple penalties on many teams). Threshold is now
+1.1 (`WEAKNESS_THRESHOLD`, regression-tested); the fix reordered the budget
+and ready tiers. All scores reported before session (f) carried this noise.
+
+**New CLI `npm run rate` (session f):** score a hand-picked team — or profile
+individual mons — against the meta using the FULL rankings (no top-100
+cutoff), so off-meta picks are gradeable. `--build ready|optimal`,
+`--pool-top N` ranks the team against every team the roster can field.
+Numbers are directly comparable to the optimize report.
 
 Cross-validation in the browser (PvPoke Team Builder, teams #1 and #6): the
 generated share links load the exact custom builds (IVs, levels, movesets);
@@ -74,8 +90,17 @@ B/B/B/A (team 6) and B/D/B/A (team 1).
 
 ## Next action
 
-**The ⭐ evaluation checkpoint — user verdict required:** would you actually
-bring these teams? Observations queued for the tuning conversation:
+**/plan Milestone 5 — Ultra League** (user request; roadmap lists the code
+touchpoints). Scans for UL are additive — the user was advised to never wipe
+Poke Genie, only add and delete individually on in-game transfer.
+
+The ⭐ checkpoint is closed (verdict above). The user's stated dust plan:
+play Altaria+Clefable+G-Fisk now; build **Shadow Ninetales** (Vulpix L8
+14/13/15 → ~67k dust + 50k unlock + 2 Elite TMs) when dust allows — its
+Clefable/Zweilous team is the roster's 82.0 no-XL ceiling and patches the
+bulky-Water wall every current ready team leaks.
+
+Scoring-tuning observations, queued for M5 (iteration is free — matrix cached):
 
 1. **No bulk component.** PvPoke's Team Builder grades the optimal #1
    (Sableye(S)/Clefable/Charjabug) **D on bulk** — fragile Charjabug +
@@ -84,13 +109,24 @@ bring these teams? Observations queued for the tuning conversation:
 2. **Coverage is too linear.** Sableye(S)/Mantine/Registeel has 3 unanswered
    threats vs 9 for the #1 team, yet scores *lower* — best-rating averaging
    barely separates hard-loss counts. Candidate fix: sigmoid around 500
-   and/or an explicit hard-loss penalty.
-3. **Presentation diversity within a tier.** The optimal list is one
+   and/or an explicit hard-loss penalty. **More evidence (session f):** among
+   the user's fielded 15, Abomasnow(S)/Poliwrath/Gliscor(S) has only 6
+   unanswered threats yet scores 77.8, below Crustle/Sandslash(A)/Poliwrath's
+   78.4 with 16 unanswered.
+3. **Top-100 viability cutoff is too narrow (new, session f).** A top-600
+   pool produced a better optimal team than the tracked report (82.0 no-XL
+   Ninetales(S)/Clefable/Zweilous vs 81.8 XL-Sableye) and *all* of the
+   user's fielded mons rank 121–564. Revisit the default; see
+   open-questions.md "Viability threshold".
+4. **Presentation diversity within a tier.** The optimal list is one
    Sableye+Clefable core × variants. Consider best-team-per-core or an
    appearance cap when reporting.
 
-After the verdict: tune scoring here (iteration is free — matrix is cached),
-then Milestone 4.
+Also queued from session (f): the float-noise weakness fix is in (see State);
+a candidate follow-up is a cost-aware specimen dedupe (viability keeps only
+the best stat-product specimen per species, but an owned, already-built
+specimen can beat a cheaper-on-paper rebuild for budget purposes — Greedent
+showed this: ready specimen free at 78.4-team vs 44k Skwovet build at 80.0).
 
 ## Decisions made
 
@@ -109,13 +145,48 @@ then Milestone 4.
 
 ## Open threads
 
-- **Evaluation verdict + scoring tuning** (see Next action).
-- Poke Genie: does the app hold movesets in-app at all? (open-questions.md)
+- **Scoring tuning** — observations 1–4 in Next action; fold into M5.
+- **Poke Genie in-app move entry → export experiment** (open-questions.md):
+  if manual in-app moves populate the export's empty move columns, real
+  movesets become nearly free. Awaiting the user's 2-minute test.
+- **Roster default path**: CLIs default to `data/poke_genie_export.csv` but
+  the current export is `poke_genie_export_updated.csv`. Both are the user's
+  files — don't delete; resolve at next /plan (flag default, config, or ask
+  the user to rename).
+- Confirmed real movesets so far (use in analysis; candidates for a tracked
+  overrides file): Dewgong has Ice Shard + Icy Wind; Altaria has Sky Attack +
+  Moonblast (keeps Moonblast deliberately); Talonflame assumed to have
+  Incinerate (fielded main).
 - `mew` prefix search semantics — cosmetic only, still open.
-- Appraisal-state persistence while swiping — matters for Milestone 4.
 
 ## Session log
 
+- **2026-08-14 (f)** — Checkpoint feedback: user shipped
+  `data/poke_genie_export_updated.csv` (+9 scans, their live GBL squad, all
+  ~1490–1500 CP) and asked to rate their fielded team and 12 other mons. None
+  of the 9 new mons is in the top-100 viability pool (Galvantula is GL rank
+  500 of 1143), which is exactly why the optimizer never proposed them. Added
+  `npm run rate` (see State). Found/fixed the float32 weakness-threshold bug
+  (see State); 74 tests green; out/teams.md regenerated. Findings: user trio
+  G-Fisk/Talonflame/Galvantula rates **72.1** (#1884 of 11,480 ready teams);
+  swapping Galvantula → their benched Clefable gives 77.5; best fielded-only
+  trio Crustle/Sandslash(A)/Poliwrath 78.4; ready-now #1
+  Altaria/Clefable/G-Fisk 79.7. Continued in the same session: Dewgong's two
+  legacy moves confirmed owned (cost note only — sims already assumed them);
+  dust-tier analysis via Poke Genie's own dust figures (best ≤74k total:
+  Talonflame+Greedent(Skwovet 12/15/14→L22.5)+Clefable 80.0; ceiling 326k
+  no-XL: Ninetales(S)+Clefable+Zweilous 82.0 — beats the top-100-pool
+  optimal, evidence the viability cutoff is too narrow); shadow-vs-regular
+  Ninetales compared (species-tied #12/#13, shadow flips the bulky Waters —
+  named the roster's best long-term dust target); Moonblast-vs-Flamethrower
+  simulated on the user's real Altaria (FT better on this exact team,
+  79.7/10 losses vs 79.5/13 — user keeps Moonblast for the Elite-TM
+  asymmetry, accepts the Corviknight/Empoleon(S) leaks); **user adopted the
+  team, reports it performing very well — ⭐ verdict positive, checkpoint
+  closed**; UL/ML requested next (export's `(U)` block + vendored
+  rankings-2500/10000 verified present); M4 re-scoped away by user decision
+  (no manual moveset pass; opportunistic corrections + the PG in-app-entry
+  experiment recorded in open-questions.md); docs synced for a clean /plan.
 - **2026-08-14 (e)** — User asked for resource-tiered suggestions. Added
   `exactLevel` builds to the harness, `selectReadyCandidates` (CP-equality
   assert vs the scan) + `filterBudgetCandidates` to viability, tier-structured

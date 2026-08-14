@@ -112,9 +112,15 @@ function buildCostLine(v: ViableCandidate, gm: Gamemaster, tier: TierKey): strin
   return parts.length > 0 ? parts.join(" · ") : "ready as-is";
 }
 
-function teamDetail(team: TeamScore, tier: TierSection, inputs: ReportInputs): string {
-  const { gm, config, sim } = inputs;
-  const memberViable = team.indices.map((i) => tier.viable[i]!);
+/** Render one team's full breakdown; also used by the rate CLI for hand-picked teams. */
+export function renderTeamDetail(
+  team: TeamScore,
+  viable: readonly ViableCandidate[],
+  tierKey: TierKey,
+  ctx: { gm: Gamemaster; config: ScoreConfig; sim: PvpokeSim },
+): string {
+  const { gm, config, sim } = ctx;
+  const memberViable = team.indices.map((i) => viable[i]!);
   const lines: string[] = [];
   const c = team.components;
   const w = config.componentWeights;
@@ -131,7 +137,7 @@ function teamDetail(team: TeamScore, tier: TierSection, inputs: ReportInputs): s
       `- **${displayName(v.candidate.targetSpeciesId, gm)}** ` +
         `(from ${o.name} CP${o.cp} L${o.level} ${o.ivs.atk}/${o.ivs.def}/${o.ivs.hp})` +
         ` — build L${v.build.level} CP${v.build.cp}; ${moves[0]} + ${moves.slice(1).join(" / ")}` +
-        `; ${buildCostLine(v, gm, tier.key)}`,
+        `; ${buildCostLine(v, gm, tierKey)}`,
     );
   }
   lines.push("");
@@ -176,7 +182,7 @@ function tierSection(tier: TierSection, inputs: ReportInputs): string {
   );
   lines.push(`### ${names.join(" + ")} — ${best.total.toFixed(1)}`);
   lines.push("");
-  lines.push(teamDetail(best, tier, inputs));
+  lines.push(renderTeamDetail(best, tier.viable, tier.key, inputs));
   if (tier.top.length > 1) {
     lines.push("");
     lines.push("Also strong in this tier:");

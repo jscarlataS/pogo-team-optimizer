@@ -70,11 +70,16 @@ Full verified shape in `data-sources.md`:
 New, discovered in the export:
 
 - [ ] **Moves are entirely absent from the export** — all three move columns
-      empty in all 149 rows. Does the app hold moves for these scans at all
-      (check a scan record in-app)? Is there a setting or scan variant that
-      captures them? Until resolved, the pipeline cannot know actual movesets —
-      it must score with PvPoke's ranked moveset (or take manual move entry for
-      a shortlist).
+      (`Quick Move`/`Charge Move`/`Charge Move 2`, columns 14–16) are present
+      but empty in all 158 rows. Poke Genie allows manual move entry per mon
+      in-app; whether that populates these columns on re-export is the open
+      question. *Minimal test (requires user):* set the known moves on one
+      scanned mon in Poke Genie, re-export, check that row's columns 14–16.
+      If they fill, shortlist movesets become a one-time in-app chore and the
+      parser can carry them through. Decision 2026-08-14: a dedicated manual
+      recording pass is declined regardless (M4 re-scope, see roadmap); until
+      this experiment succeeds, scoring assumes ranked movesets and the user
+      states real moves ad hoc when they matter.
 - [ ] **`Sha/Pur (G/U/L)` semantics** (values 0/1/2/empty; 2 appears only on
       shadows). Not needed by the pipeline; low priority.
 - [ ] **Purified encoding in `Shadow/Purified`** — no purified specimen in the
@@ -98,17 +103,19 @@ New, discovered in the export:
       `mew` also match Mewtwo?). Still untested — now moot for scanning (the
       evolution-line toggle + dex numbers sidestep it); keep open only for
       cosmetic cleanliness of future search strings.
-- [ ] **Whether appraisal state persists while swiping between Pokémon.** If it does,
-      Milestone 4's exact-IV pass is dramatically cheaper than assumed.
-      *Minimal test:* appraise one Pokémon, swipe to the next, check whether the
-      appraisal overlay stays up.
+- [x] **Whether appraisal state persists while swiping between Pokémon** — MOOT
+      2026-08-14: the export already carries exact IVs and the M4 appraisal
+      pass was dropped entirely (roadmap re-scope). Never tested.
 
 ## Design assumptions worth revisiting
 
 - [ ] **Shield weighting 0.30/0.50/0.20** — adopted from prior art, not independently
       derived. Reasonable default, not gospel.
-- [ ] **Viability threshold** (PvPoke score ≥ ~70, or top 100) — arbitrary starting
-      point. Check whether it is excluding Pokémon that would make good teams.
-- [ ] **Whether IV precision meaningfully changes team selection.** Milestone 4
-      produces the empirical answer. If it turns out not to matter, the appraisal pass
-      can be dropped from future runs entirely.
+- [ ] **Viability threshold** (top 100) — now backed by evidence that it is too
+      tight: session (f) found a top-600 pool yields a *better* optimal team
+      than the top-100 pool (82.0 no-XL vs 81.8 with XL) and every one of the
+      user's fielded mons ranks 121–564. Revisit the default during M5.
+- [x] **Whether IV precision meaningfully changes team selection** — MOOT
+      2026-08-14: the premise (scan-time IV ranges vs appraisal-exact IVs)
+      never materialised; the export's IVs are exact. No precision gap exists
+      to measure.
