@@ -20,7 +20,19 @@ export const RANKINGS_1500_PATH = join(
 // these so nothing downstream can quietly depend on an unverified field.
 export interface RankingEntry {
   speciesId: string;
+  speciesName: string;
   score: number;
+  /** [leads, closers, switches, chargers, attackers, consistency], each 0–100. */
+  scores: number[];
+  /** Fast move + 1–2 charged moves, UPPER_SNAKE ids — PvPoke's ranked moveset. */
+  moveset: string[];
+}
+
+export interface GamemasterFamily {
+  id: string;
+  parent?: string;
+  /** speciesIds; shadow lineages are pre-wired (dwebble_shadow → crustle_shadow). */
+  evolutions?: string[];
 }
 
 export interface GamemasterPokemon {
@@ -28,6 +40,9 @@ export interface GamemasterPokemon {
   dex: number;
   speciesName: string;
   aliasId?: string;
+  tags?: string[];
+  family?: GamemasterFamily;
+  released: boolean;
 }
 
 export interface Gamemaster {
@@ -72,7 +87,38 @@ export function loadRankings1500(): RankingEntry[] {
         `entry ${i} lacks a string speciesId and finite numeric score`,
       );
     }
-    return { speciesId: raw.speciesId, score: raw.score as number };
+    if (typeof raw.speciesName !== "string") {
+      throw shapeError(RANKINGS_1500_PATH, `entry ${i} lacks a string speciesName`);
+    }
+    const { scores, moveset } = raw;
+    if (
+      !Array.isArray(scores) ||
+      scores.length !== 6 ||
+      scores.some((s) => !Number.isFinite(s))
+    ) {
+      throw shapeError(
+        RANKINGS_1500_PATH,
+        `entry ${i} ("${raw.speciesId}") lacks the 6-element numeric scores array`,
+      );
+    }
+    if (
+      !Array.isArray(moveset) ||
+      moveset.length < 2 ||
+      moveset.length > 3 ||
+      moveset.some((m) => typeof m !== "string" || m === "")
+    ) {
+      throw shapeError(
+        RANKINGS_1500_PATH,
+        `entry ${i} ("${raw.speciesId}") lacks a 2–3 element moveset array`,
+      );
+    }
+    return {
+      speciesId: raw.speciesId,
+      speciesName: raw.speciesName,
+      score: raw.score as number,
+      scores: scores as number[],
+      moveset: moveset as string[],
+    };
   });
   for (let i = 1; i < entries.length; i++) {
     if (entries[i]!.score > entries[i - 1]!.score) {
@@ -93,6 +139,14 @@ export function loadGamemaster(): Gamemaster {
   if (!Array.isArray(data.pokemon) || data.pokemon.length === 0) {
     throw shapeError(GAMEMASTER_PATH, "expected a non-empty pokemon array");
   }
+  const isStringArray = (v: unknown): v is string[] =>
+    Array.isArray(v) && v.every((s) => typeof s === "string" && s !== "");
+  const isFamily = (v: unknown): v is GamemasterFamily =>
+    isRecord(v) &&
+    typeof v.id === "string" &&
+    (v.parent === undefined || typeof v.parent === "string") &&
+    (v.evolutions === undefined || isStringArray(v.evolutions));
+
   const pokemonById = new Map<string, GamemasterPokemon>();
   data.pokemon.forEach((raw, i) => {
     if (
@@ -100,11 +154,15 @@ export function loadGamemaster(): Gamemaster {
       typeof raw.speciesId !== "string" ||
       typeof raw.speciesName !== "string" ||
       !Number.isInteger(raw.dex) ||
-      (raw.aliasId !== undefined && typeof raw.aliasId !== "string")
+      (raw.aliasId !== undefined && typeof raw.aliasId !== "string") ||
+      typeof raw.released !== "boolean" ||
+      (raw.tags !== undefined && !isStringArray(raw.tags)) ||
+      (raw.family !== undefined && !isFamily(raw.family))
     ) {
       throw shapeError(
         GAMEMASTER_PATH,
-        `pokemon[${i}] lacks the expected speciesId/speciesName/dex/aliasId shape`,
+        `pokemon[${i}] lacks the expected speciesId/speciesName/dex/aliasId/` +
+          `released/tags/family shape`,
       );
     }
     if (pokemonById.has(raw.speciesId)) {
@@ -114,7 +172,10 @@ export function loadGamemaster(): Gamemaster {
       speciesId: raw.speciesId,
       dex: raw.dex as number,
       speciesName: raw.speciesName,
+      released: raw.released,
       ...(raw.aliasId !== undefined ? { aliasId: raw.aliasId } : {}),
+      ...(raw.tags !== undefined ? { tags: raw.tags } : {}),
+      ...(raw.family !== undefined ? { family: raw.family } : {}),
     });
   });
   return { timestamp: data.timestamp, pokemonById };

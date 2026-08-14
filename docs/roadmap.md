@@ -7,7 +7,7 @@ plus three hours of tapping through a phone.
 
 ---
 
-## Milestone 0 — Data acquisition and shape verification
+## Milestone 0 — Data acquisition and shape verification ✅ 2026-08-14
 
 **Goal:** know exactly what the data looks like before designing against it.
 
@@ -23,7 +23,7 @@ plus three hours of tapping through a phone.
 
 ---
 
-## Milestone 1 — Species list and in-game search string
+## Milestone 1 — Species list and in-game search string ✅ 2026-08-14
 
 **Goal:** first useful output, before any simulation exists.
 
@@ -41,42 +41,42 @@ Milestone 2 needs anyway.
 
 ---
 
-## Milestone 2 — Full pipeline on synthetic data ⭐
+## Milestone 2+3 — Full pipeline on the real roster ⭐ (merged 2026-08-14)
 
-**Goal:** validate the scoring function before investing in real data collection.
+Originally synthetic-data validation (M2) preceded the expensive manual scan (M3)
+to protect that investment. The user bought Scan Pro and scanned the box on
+2026-08-14, so the cost is sunk; the milestones merged and the pipeline is built
+directly against the real CSV (shape verified — see `reference/data-sources.md`).
+The synthetic fixture survives only as a small tracked test fixture excerpted from
+the real export.
 
-- [ ] Hand-write `fixtures/roster-sample.csv` — 20–25 Pokémon believed to be owned,
-      with guessed IVs and known movesets. Approximate is fine.
-- [ ] Implement stages 1→6 end to end against it
-- [ ] Print the top 10 teams with full score breakdowns
+**Decision (2026-08-14): the export carries no moves**, so scoring assumes each
+Pokémon runs PvPoke's ranked moveset, and the report tells the user what to TM to.
+Actual-move precision is deferred to Milestone 4's shortlist pass.
 
-**Then stop and evaluate.** Look at the output and ask: *would I actually bring these
-teams?* Compare two or three of them against PvPoke's Team Builder grades directly.
+- [ ] Ingest the verified 49-column CSV (loud-failing parser, dedupe assert,
+      tracked ~15-row fixture)
+- [ ] Species resolution + family expansion: each owned mon → every GL-ranked
+      family member, IVs carried through (the box is mostly pre-evolutions)
+- [ ] Viability filter, including CP-cap feasibility at the current-level floor
+      (levels cannot go down)
+- [ ] Headless Battle.js harness: reproduce one published PvPoke matchup rating,
+      then **measure per-sim cost** — closes the last Milestone 0 open question
+      and re-tests the brute-force decision
+- [ ] Matchup matrix: candidates × top-100 meta × 3 shield scenarios, cached on
+      disk keyed by (roster, meta, gamemaster, config) hash
+- [ ] C(n,3) team search + component scoring, every weight in one config object
+- [ ] Report: top 10 with score breakdowns, meta scorecard, coverage gaps,
+      in-game search strings, Team Builder links, build costs
 
-- If the teams are obviously wrong → the scoring function is wrong. Fix it here,
-  where iteration is free.
-- If the teams look right → proceed to Milestone 3.
+**Then stop and evaluate — still the highest-value checkpoint in the project.**
+Would I actually bring these teams? Compare two or three against PvPoke's Team
+Builder grades. Obviously wrong teams mean the scoring function is wrong — fix it
+here, where iteration is free. Do not skip past this because the pipeline "works".
 
-**This is the highest-value checkpoint in the project.** Do not skip past it because
-the pipeline "works" — working and correct are different things.
-
----
-
-## Milestone 3 — Real roster ingest
-
-**Goal:** replace synthetic data with the actual collection.
-
-- [ ] Purchase Poke Genie Scan Pro (~$9.99 one-time; unlocks both CSV export and,
-      on iOS, IVision scanning — same purchase)
-- [ ] Paste Milestone 1's search string into the game to filter the box
-- [ ] Scan the filtered set — **detail pages only, no appraisal**. Captures species,
-      moves, CP, HP. Fast per Pokémon.
-- [ ] Export CSV, document the real column headers in `reference/data-sources.md`
-- [ ] Implement the real parser: dedupe, handle scan-history semantics, resolve species
-- [ ] Support `IvRange` (detail-page scans give candidate IV sets, not exact values)
-- [ ] Rerun the pipeline against real data
-
-**Done when:** the optimizer runs on the actual collection.
+**Done when:** one command reads `data/poke_genie_export.csv` and prints the
+top-10 GL teams with score breakdowns; per-sim cost is measured and recorded; the
+matrix cache demonstrably hits on rerun; the evaluation verdict is in `status.md`.
 
 ---
 
@@ -86,6 +86,8 @@ the pipeline "works" — working and correct are different things.
 
 - [ ] Identify the 15–20 Pokémon that recur across the top-scoring teams
 - [ ] Go back and scan *those* via the appraisal screen for exact IVs
+- [ ] While there, record their *actual* movesets by hand (the CSV export has
+      none) and rerun with real moves instead of assumed ranked movesets
 - [ ] Rerun; compare team rankings before and after
 
 The comparison is worth recording: it tells you empirically how much IV precision

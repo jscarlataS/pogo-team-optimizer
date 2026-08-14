@@ -1,80 +1,115 @@
 # Status
 
 **Last updated:** 2026-08-14
-**Current milestone:** 1 effectively done (strings used in anger to scan the
-box; formal checklist answers still to record) — next: plan the real-data
-pipeline (proposed M2+M3 merge, see below)
+**Current milestone:** 2+3 (merged) — pipeline complete and running on the real
+roster; **awaiting the user's evaluation-checkpoint verdict** on the top-10 teams
 
 ---
 
 ## State
 
-**Milestone 0 complete.** PvPoke vendored at `vendor/pvpoke/` (sparse clone of
-`src/data` + `src/js`, commit `e5ee9b7672`, 2026-08-13). All PvPoke data shapes
-verified by observation and recorded in `reference/data-sources.md`; the PvPoke
-items in `reference/open-questions.md` are resolved except per-simulation cost
-(needs Milestone 2's harness to measure).
+**Milestones 0 and 1 complete** (see session log and git history).
 
-**Milestone 1 code complete, not yet verified in-game.** Repo is now a git repo
-(vendor/ untracked; pinned commit documented in data-sources.md). First code:
-Node 20+ / TypeScript / tsx / vitest, zero runtime deps. `npm run species-list`
-loads the vendored GL rankings + gamemaster (validating only consumed fields,
-failing loudly on drift), collapses the top 100 entries to **73 base species by
-dex number** (rank order preserved), and emits chunked comma-separated search
-strings (names + dex variants, default 200-char budget) as markdown with the
-manual test checklist embedded. Output at `out/gl-search-strings.md`
-(regenerable; committed so the chunks are copyable from a phone via GitHub).
-21 tests pass, including drift detection pinned to the
-vendored commit (1,143 ranking entries; top 100 → 73).
+**Milestone 2+3 (merged) — code complete, ⭐ checkpoint pending.** The merge was
+confirmed at /plan on 2026-08-14 and implemented the same day.
 
-No Poke Genie CSV exists yet — Scan Pro not purchased, no scanning done. This is
-intentional: the roadmap defers scanning until after the pipeline is validated on
-synthetic data (Milestone 2).
+Data verification (the real export, 149 rows, read end to end):
+
+- 49-column layout recorded verbatim in `reference/data-sources.md`; parser
+  asserts it and fails loudly on drift.
+- **IVs are exact** — no ranges anywhere; `IvRange` dropped from the design
+  (parser errors loudly if `Level Min ≠ Level Max` ever appears).
+- **The export carries no moves** (all three move columns empty in all rows) —
+  decision: score assuming PvPoke's ranked movesets; the report lists them as
+  TM targets with Elite TM flags. Real movesets deferred to Milestone 4's
+  appraisal pass.
+- Rescans merge in place (no duplicates); a league block is empty iff current
+  CP exceeds that league's cap; Poke Genie's per-league blocks are its own PvP
+  analysis and serve as a free cross-check oracle.
+
+Pipeline (all stages, 66 tests green):
+
+- `src/roster.ts` — loud-failing 49-column parser; duplicate assert; tracked
+  17-row fixture at `fixtures/roster-sample.csv`.
+- `src/resolve.ts` — (dex, form, shadow) → speciesId; family expansion along
+  gamemaster `family.evolutions` with the GO rule that evolution never changes
+  regional form. Oracle: expansion covers Poke Genie's own GL target for all
+  149 rows.
+- `src/viability.ts` — top-100 meta filter + CP-cap feasibility at the
+  current-level floor (levels cannot go down); best specimen per target
+  species. Real roster: 260 candidates → 41 viable, 23 infeasible.
+- `src/sim/harness.ts` — headless Battle.js in one vm context (shims recorded
+  in data-sources.md). **Validated: reproduces published leads matchup ratings
+  exactly.** Per-sim cost measured **~0.45 ms** (0.18 ms in bulk) — the last
+  Milestone 0 open question, closed; brute force confirmed.
+- `src/matrix.ts` — 41 × 100 × 3 = 12,300 sims in 2.2 s, cached on disk keyed
+  by (gamemaster, builds, meta, scenarios); cache hit verified on rerun.
+- `src/score.ts` — five components (coverage, threat, shared-weakness, roles,
+  consistency) aggregated as a weighted geometric mean; every tunable in one
+  `ScoreConfig`. Pure and unit-tested without the simulator.
+- `src/report.ts` + CLIs — `npm run candidates` (stage-3 eyeball checkpoint),
+  `npm run optimize` (full run → `out/teams.md`, tracked for phone access).
+
+Real-run result: top-10 teams dominated by **Shadow Sableye (10/10) +
+Clefable (9/10)** + a rotating third; scores ~81.4–81.8.
+
+Cross-validation in the browser (PvPoke Team Builder, teams #1 and #6): the
+generated share links load the exact custom builds (IVs, levels, movesets);
+PvPoke's threat lists agree with our unanswered-threat lists; grades were
+B/B/B/A (team 6) and B/D/B/A (team 1).
 
 ## Next action
 
-Run `/plan`. **Reality jumped ahead of the roadmap on 2026-08-14:** the user
-bought Scan Pro and scanned the box using the Milestone 1 search strings — a
-real Poke Genie CSV now exists (drop point: `data/`, gitignored). The roadmap
-put synthetic validation (M2) before real ingest (M3) only to avoid wasting the
-manual scan if the pipeline design proved wrong; that cost is now sunk.
+**The ⭐ evaluation checkpoint — user verdict required:** would you actually
+bring these teams? Observations queued for the tuning conversation:
 
-**Proposed re-sequencing, to confirm at the next /plan:** merge M2+M3 — build
-ingest against the real CSV (resolving the Poke Genie open questions by reading
-the actual file, per the verify-data rule), drive the full pipeline on it, and
-run the M2 evaluation checkpoint ("would I actually bring these teams?" +
-PvPoke Team Builder comparison) on real data. The hand-written synthetic
-fixture shrinks to a small tracked test fixture. Unchanged: the per-simulation
-cost measurement still gates the brute-force decision, and the evaluation
-checkpoint remains the project's most important gate — do not skip it just
-because real data makes the pipeline "work".
+1. **No bulk component.** PvPoke grades team #1's bulk **D** (Charjabug +
+   Sableye fragility); our scorer cannot see that. Candidate fix: a stat-product
+   component, or shield-pressure proxy.
+2. **Coverage is too linear.** Team #6 has 3 unanswered threats, team #1 has
+   9, yet #1 scores higher — best-rating averaging barely separates them.
+   Candidate fix: sigmoid around 500 and/or an explicit hard-loss penalty.
+3. **Presentation diversity.** The top 10 is one core ×8 variants. Consider
+   best-team-per-core or an appearance cap when reporting.
 
-**Also before/while planning:** collect the user's in-game observations from
-the M1 checklist and record them in `reference/open-questions.md` (the strings
-demonstrably worked well enough to scan with, but cap/OR/prefix specifics are
-unrecorded).
+After the verdict: tune scoring here (iteration is free — matrix is cached),
+then Milestone 4.
 
 ## Decisions made
 
-- **League:** Great League (1500) first. Deepest viable pool, largest meta, most
-  PvPoke data — and most likely to already contain something usable in an
-  existing collection. Other leagues deferred to Milestone 5.
+- **League:** Great League (1500) first. Other leagues deferred to Milestone 5.
 - **Language/stack:** Node + TypeScript, CLI only.
 - **Simulator:** vendor and drive PvPoke's `Battle.js`; do not reimplement.
-- **Search strategy:** brute-force C(n,3). No metaheuristic for the 3-slot case.
-- **Scanning strategy:** two-pass — broad detail-page scan first, appraisal only on
-  the shortlist the optimizer surfaces.
+- **Search strategy:** brute-force C(n,3) — confirmed by measurement.
+- **Scanning strategy:** two-pass — broad detail-page scan first, appraisal only
+  on the shortlist the optimizer surfaces.
+- **M2+M3 merged** (2026-08-14, confirmed at /plan): scan cost was already sunk.
+- **Movesets:** score assuming PvPoke ranked movesets (the export has none);
+  real moves recorded by hand in Milestone 4.
+- **Meta weighting:** opponent weight ∝ PvPoke overall score until real usage
+  data (Milestone 5); shield scenarios weighted 0.30/0.50/0.20.
+- **Level cap 50** (no best-buddy 51) — PvPoke defaults.
 
 ## Open threads
 
-- M1 in-game checklist observations (length cap, OR semantics, `mew` prefix
-  behaviour) not yet written into `reference/open-questions.md` — get them from
-  the user while memory is fresh.
-- Roadmap re-sequencing (M2+M3 merge) proposed but not yet confirmed or
-  reflected in `roadmap.md` — decide at next /plan and update the roadmap then.
+- **Evaluation verdict + scoring tuning** (see Next action).
+- Poke Genie: does the app hold movesets in-app at all? (open-questions.md)
+- `mew` prefix search semantics — cosmetic only, still open.
+- Appraisal-state persistence while swiping — matters for Milestone 4.
 
 ## Session log
 
+- **2026-08-14 (d)** — /plan confirmed the M2+M3 merge; implemented the whole
+  merged milestone in one session. Verified the real CSV (three surprises: no
+  moves, exact IVs, per-league analysis blocks) and recorded it; rewrote
+  roadmap; fixed `.gitignore` anchoring (`/data/`) and moved the CSV to
+  `data/`. Built roster→resolve→viability→harness→matrix→score→report;
+  harness reproduces published ratings exactly; per-sim cost 0.45 ms (last M0
+  question closed). Real run: 149 → 260 → 41 viable → 10,660 teams. Team
+  Builder cross-check in the browser validated links and threat agreement.
+  M1 observations recorded (full list pastes untruncated; "Show evolution
+  line" toggle explains pre-evolutions in the box). 66 tests. Awaiting the
+  user's checkpoint verdict.
 - **2026-08-14 (c)** — User bought Scan Pro and scanned the whole filtered box
   the same day (ahead of the roadmap's M2-before-M3 sequencing); real CSV
   exists. Repo published to GitHub (private,

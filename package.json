@@ -8,6 +8,8 @@
   },
   "scripts": {
     "species-list": "tsx src/cli/species-list.ts",
+    "candidates": "tsx src/cli/candidates.ts",
+    "optimize": "tsx src/cli/optimize.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

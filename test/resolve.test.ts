@@ -1,0 +1,151 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import { loadGamemaster } from "../src/data/pvpoke.js";
+import type { Gamemaster } from "../src/data/pvpoke.js";
+import { deriveBaseName } from "../src/species.js";
+import { loadRoster, parseRosterCsv } from "../src/roster.js";
+import type { OwnedPokemon } from "../src/roster.js";
+import { expandFamily, expandRoster, resolveSpeciesId } from "../src/resolve.js";
+
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const REAL_CSV = join(REPO_ROOT, "data", "poke_genie_export.csv");
+
+const gm = loadGamemaster();
+const fixtureRoster = parseRosterCsv(
+  readFileSync(join(REPO_ROOT, "fixtures", "roster-sample.csv"), "utf8"),
+  "fixture",
+);
+
+const fakeMon = (over: Partial<OwnedPokemon>): OwnedPokemon => ({
+  id: "t", name: "X", form: "", dex: 0, cp: 100, hp: 10,
+  ivs: { atk: 0, def: 0, hp: 0 }, level: 10, lucky: false, shadow: false,
+  scannedAt: "", originalScannedAt: "", dust: 0, ...over,
+});
+
+const REGION_TAGS = ["alolan", "galarian", "hisuian", "paldean"];
+const regionOfId = (speciesId: string): string | null => {
+  const tags = gm.pokemonById.get(speciesId)?.tags ?? [];
+  return REGION_TAGS.find((t) => tags.includes(t)) ?? null;
+};
+const FORM_TO_REGION = new Map<string, string | null>([
+  ["", null], ["normal", null], ["alola", "alolan"],
+  ["galar", "galarian"], ["hisui", "hisuian"], ["paldea", "paldean"],
+]);
+
+// Poke Genie's own per-league target (Name (G)/Form (G)) acts as an
+// independently computed oracle for the family expansion: whatever it deemed
+// the Great League family member must be among our candidates, matched by
+// base name + regional form. (Its shadow column is unverified — not asserted.)
+function expansionCoversPokeGenieTarget(mon: OwnedPokemon, g: Gamemaster): boolean {
+  if (!mon.greatLeague) {
+    return true;
+  }
+  const wantName = mon.greatLeague.targetName;
+  const wantRegion = FORM_TO_REGION.get(mon.greatLeague.targetForm.toLowerCase());
+  return expandFamily(mon, g).some((c) => {
+    const entry = g.pokemonById.get(c.targetSpeciesId)!;
+    return (
+      deriveBaseName(entry.speciesName) === wantName &&
+      regionOfId(c.targetSpeciesId) === (wantRegion ?? null)
+    );
+  });
+}
+
+describe("resolveSpeciesId", () => {
+  it("resolves the fixture roster to the expected ids", () => {
+    const expectations: Record<string, string> = {
+      "Dwebble-249": "dwebble_shadow",
+      "Mareanie-272": "mareanie",
+      "Stunfisk-1478": "stunfisk_galarian",
+      "Marowak-1017": "marowak_alolan",
+      "Dusknoir-1122": "dusknoir",
+      "Registeel-1352": "registeel",
+      "Melmetal-3456": "melmetal",
+      "Medicham-599": "medicham",
+      "Vulpix-195": "vulpix_shadow",
+      "Vulpix-639": "vulpix",
+      "Altaria-1475": "altaria",
+      "Wooper-355": "wooper_paldean",
+      "Totodile-209": "totodile_shadow",
+      "Sableye-318": "sableye_shadow",
+      "Azumarill-673": "azumarill",
+      "Seadra-1483": "seadra",
+      "Lapras-1956": "lapras",
+    };
+    for (const mon of fixtureRoster) {
+      expect(resolveSpeciesId(mon, gm), `${mon.name}-${mon.cp}`).toBe(
+        expectations[`${mon.name}-${mon.cp}`],
+      );
+    }
+  });
+
+  it("fails loudly on ambiguous multi-form species (Castform)", () => {
+    expect(() =>
+      resolveSpeciesId(fakeMon({ name: "Castform", dex: 351 }), gm),
+    ).toThrow(/RESOLVE_OVERRIDES/);
+  });
+});
+
+describe("expandFamily", () => {
+  const targets = (mon: OwnedPokemon): string[] =>
+    expandFamily(mon, gm).map((c) => c.targetSpeciesId);
+
+  it("follows pre-wired shadow lineages", () => {
+    expect(targets(fixtureRoster.find((m) => m.name === "Dwebble")!)).toEqual([
+      "dwebble_shadow",
+      "crustle_shadow",
+    ]);
+  });
+
+  it("walks two evolution steps with step counts", () => {
+    const cands = expandFamily(fixtureRoster.find((m) => m.name === "Totodile")!, gm);
+    expect(
+      cands.map((c) => [c.targetSpeciesId, c.evolutionSteps]),
+    ).toEqual([
+      ["totodile_shadow", 0],
+      ["croconaw_shadow", 1],
+      ["feraligatr_shadow", 2],
+    ]);
+  });
+
+  it("never changes regional form on evolution (Cubone ↛ Alolan Marowak)", () => {
+    expect(targets(fakeMon({ name: "Cubone", dex: 104 }))).toEqual([
+      "cubone",
+      "marowak",
+    ]);
+    expect(targets(fakeMon({ name: "Cubone", dex: 104, shadow: true }))).toEqual([
+      "cubone_shadow",
+      "marowak_shadow",
+    ]);
+  });
+
+  it("crosses into untagged converging lines (Paldean Wooper → Clodsire)", () => {
+    expect(targets(fixtureRoster.find((m) => m.name === "Wooper")!)).toEqual([
+      "wooper_paldean",
+      "clodsire",
+    ]);
+  });
+
+  it("expands branching families (Eevee → 8 evolutions)", () => {
+    expect(targets(fakeMon({ name: "Eevee", dex: 133 }))).toHaveLength(9);
+  });
+
+  it("covers Poke Genie's own league target for every fixture row", () => {
+    for (const mon of fixtureRoster) {
+      expect(expansionCoversPokeGenieTarget(mon, gm), `${mon.name}-${mon.cp}`).toBe(true);
+    }
+  });
+});
+
+describe.skipIf(!existsSync(REAL_CSV))("real export resolution", () => {
+  it("resolves and expands all 149 rows, agreeing with Poke Genie's targets", () => {
+    const roster = loadRoster(REAL_CSV);
+    const candidates = expandRoster(roster, gm); // throws on any unresolved row
+    expect(candidates.length).toBeGreaterThan(roster.length);
+    for (const mon of roster) {
+      expect(expansionCoversPokeGenieTarget(mon, gm), `${mon.name}-${mon.cp}`).toBe(true);
+    }
+  });
+});

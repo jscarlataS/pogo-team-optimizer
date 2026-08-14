@@ -1,8 +1,9 @@
 node_modules/
 vendor/
-data/
+/data/
 out/*
 !out/gl-search-strings.md
+!out/teams.md
 .DS_Store
 .claude/settings.local.json
 *.log

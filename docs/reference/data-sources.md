@@ -240,6 +240,45 @@ runtime cost question stays open until Milestone 2 actually runs it):
   `setShields()`, `startEnergy` per scenario → `battle.simulate()` → read
   `getBattleRating()` / `getTurnsToWin()`.
 
+### Headless driving details — verified 2026-08-14 while building the harness
+
+- **Globals GameMaster.js needs before loading**: `host` (set `"localhost"` so it
+  loads the full, not minified, gamemaster), `webRoot`, `siteVersion` (any
+  strings), `settings = { gamemaster: "gamemaster", hardMovesetLinks: false }`
+  (the latter read by `generateURLMoveStr`), and a `$` that is *callable* — the
+  ajax success handler unconditionally builds `$link` objects and calls
+  `.insertAfter($(...).eq(...))` — so `$(anything)` must return a chainable
+  no-op, plus `$.ajax` (invoke `success` synchronously with parsed JSON),
+  `$.each` (jQuery semantics: arrays `cb(i, item)`, objects `cb(key, value)`),
+  and `window.localStorage` is only touched when `settings.gamemaster !=
+  "gamemaster"` (avoided).
+- **CPM table lives hardcoded in `Pokemon.js`** (`cpms[]`, half-level indexed:
+  `index = (level-1)*2`, levels 1–55). Not in gamemaster.json.
+- **Custom builds**: `p.autoLevel = true; p.setIV("atk"|"def"|"hp", v)` — each
+  `setIV` call walks level down from the cap until CP ≤ `battle.getCP()`, i.e.
+  computes the optimal level under the cap for those IVs. If the resulting
+  level is *below* the mon's current level, the build is infeasible in-game
+  (levels cannot go down).
+- **Meta/default builds**: `p.initialize(battle.getCP(), "gamemaster")` applies
+  `defaultIVs["cp1500"]`, auto-sets shadowType from the `shadow` tag, and
+  defaults moves to the *first alphabetical* pool entries — always override
+  moves explicitly with `selectMove(type, moveId, index)` (matches by id in the
+  pool; pass `disallowCustomAddition` truthy to avoid silently inventing moves).
+- **Ranker force-mode drive** (mirrors published rankings):
+  `setNewPokemon(p,0,false)`, `setNewPokemon(o,1,false)`, `p.reset()`,
+  `o.reset()`, `setShields` per side, startEnergy from scenario turns via the
+  side's own fast move (`floor(turns*500/cooldown)` fast moves' energyGain,
+  capped 100 — note Ranker.js line ~313 uses the *subject's* cooldown for the
+  opponent too, a real quirk), then `battle.simulate()`; rating =
+  `floor((ownHP% + damageDealt%) × 500)` = `p.getBattleRating()`.
+- **Team Builder share URL**:
+  `https://pvpoke.com/team-builder/{cup}/{cp}/{encodeURIComponent(pokeStrs.join(","))}`
+  where each pokeStr is `generateURLPokeStr("team-builder")`:
+  `aliasId[-level-atkIV-defIV-hpIV-(atkBuff+4)-(defBuff+4)-baitShields-optTiming][-shadow|-purified]-m-<fastIdx>-<charged1Idx+1>-<charged2Idx+1>`,
+  move indices into the pools **after they are sorted alphabetically by moveId**
+  (Pokemon.js sorts both pools at construction). The level/IV block appears for
+  custom (real-IV) builds and is how IVs travel in the link.
+
 ### API
 
 There is none. No public REST endpoint. Consume the static JSON.
@@ -276,23 +315,65 @@ inferred), and critically **no moves**. Moveset is arguably more decisive than I
 PvP viability, and the matchup matrix is keyed on it.
 
 - **Detail page scan** → CP, HP, level, moves, and a *range* of candidate IV combinations
+  — **did not fully survive contact** (2026-08-14, real export): the export carried
+  **no moves** and **exact** IVs, not ranges. See the verified CSV shape below.
 - **Appraisal screen scan** → exact IVs. Poke Genie auto-detects and fills in the team
   leaders' appraisal text, so no manual entry, but navigating into appraisal costs
   several extra taps per Pokémon.
 
-### CSV export
+### CSV export — verified shape (real export, 2026-08-14)
 
-Behind the paid tier — **"Scan Pro + Remove Ads", $9.99 one-time IAP** (also unlocks
-IVision on iOS). Exports scan data with a broad set of attributes for the entire scan
-history. It cannot carry images, so exported entries are incomplete relative to the
-in-app records — irrelevant here, since only stats and moves are needed.
+Behind the paid tier — **"Scan Pro", $9.99 one-time IAP** (confirmed by purchase;
+also unlocks IVision on iOS).
 
-**Semantics warning:** the export is *scan history*, not a collection snapshot. See
-`architecture.md` §1.
+Verified against the user's own export: 149 scans of the GL-filtered box, iOS,
+exported 2026-08-14. One header row, **49 columns**, plain comma separation (the
+two scan-date fields are the only quoted values; no embedded commas observed):
 
-Expected fields (species, CP, HP, IVs, IV average, level, fast move, charged moves,
-shadow/purified, lucky, per-league PvP ranks) — **exact column headers unverified**,
-confirm against a real export.
+```
+Index, Name, Form, Pokemon Number, Gender, CP, HP, Atk IV, Def IV, Sta IV,
+IV Avg, Level Min, Level Max, Quick Move, Charge Move, Charge Move 2,
+Scan Date, Original Scan Date, Catch Date, Weight, Height, Lucky,
+Shadow/Purified, Favorite, Dust,
+  Rank % (G), Rank # (G), Stat Prod (G), Dust Cost (G), Candy Cost (G),
+  Name (G), Form (G), Sha/Pur (G),
+  ...same 8-column block again for (U) and (L)...,
+Marked for PvP use
+```
+
+Observed facts — whole-file checks over all 149 rows, not row sampling:
+
+- **Moves are absent.** `Quick Move` / `Charge Move` / `Charge Move 2` are empty
+  in every row, despite all scans being detail-page scans. The old claim that a
+  detail scan yields moves did **not** survive contact, at least for the export
+  path. Whether the app holds them in its own records is a new open question.
+- **IVs are exact single integers (0–15) in every row**, and
+  `Level Min == Level Max` everywhere (half levels appear as `x.5`). No range
+  representation exists in this file; if ambiguity is ever exported, the Min/Max
+  pair is presumably where it would surface. `IvRange` machinery is unnecessary —
+  parse both, fail loudly if they ever differ.
+- **The export behaves like a snapshot, not raw scan history**: rescanning a
+  Pokémon updates its row in place (`Scan Date` advances, `Original Scan Date`
+  stays — 3 such rows) rather than appending. No two rows share
+  (Name, Form, CP, HP, IVs). There is still no owned/transferred flag, so a
+  Pokémon transferred after scanning would linger.
+- **The per-league blocks are Poke Genie's own PvP analysis.** `Name (G)` /
+  `Form (G)` name the family member it evaluated for that league — e.g. Dwebble →
+  Crustle, and it can differ per league (Dusclops for GL, Dusknoir for UL) — with
+  IV rank %, rank #, stat product, and the dust/candy cost to reach that league's
+  optimal build. A block is entirely empty **iff** current CP already exceeds the
+  league cap (confirmed: min CP among rows with empty G/U/L blocks is
+  1509/2525/516). `(L)` is **Little League (500)**, not Legendary.
+- Enums observed: `Form` ∈ {empty, `Normal`, `Alola`, `Galar`, `Paldea`} — empty
+  and `Normal` both mean base form. `Gender` ∈ {♀, ♂, empty}. `Lucky`,
+  `Favorite`, `Shadow/Purified` are 0/1 flags — **no purified Pokémon exists in
+  this box, so purified's encoding (presumably 2) is unobserved**. `Sha/Pur
+  (G/U/L)` takes 0/1/2/empty; semantics unconfirmed (1 correlates with shadow, 2
+  appears only on shadows — possibly "ranked as purified"); the pipeline does not
+  need it.
+- `Catch Date` is `M/D/YYYY` or empty. `Weight`/`Height` are almost always empty
+  (1 row has them). `Marked for PvP use` was empty in every row. `Dust` is the
+  current power-up dust cost. `Index` counts up from the most recent scan.
 
 ---
 

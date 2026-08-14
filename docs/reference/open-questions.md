@@ -45,36 +45,59 @@ editorially blended 75/25 when an `editorScore` override exists). Corrections in
       call it); `GameMaster.js` needs a `$`/`localStorage` shim or a bypassed
       loader; `DecisionOption` comes from `src/js/training/`. Details in
       `data-sources.md`.
-- [ ] **Actual per-simulation cost.** The architecture doc's estimate of "a few ms"
-      is an assumption. Static inspection cannot resolve this — measure when the
-      Milestone 2 harness first runs, and re-evaluate the brute-force decision if
-      it is off by an order of magnitude.
+- [x] **Actual per-simulation cost** — RESOLVED 2026-08-14 by measurement in the
+      merged-milestone harness: **~0.45 ms per `simulate()`** (132-sim benchmark
+      in `test/harness.test.ts`, Node 20+, Apple Silicon; the suite re-measures
+      on every run and prints the figure). A full ~16k-sim matchup matrix is
+      ~7 s, once, then cached. The architecture's "a few ms" estimate was
+      pessimistic; brute-force C(n,3) is comfortably confirmed. The same
+      harness reproduces published leads matchup ratings **exactly**, which
+      validates the headless drive end to end.
 
-## Poke Genie
+## Poke Genie — RESOLVED 2026-08-14 (real export read; two new items below)
 
-- [ ] **Exact CSV column headers and their order.** Known only at the level of "which
-      attributes are included." Confirm against a real export from the actual account —
-      these have changed between app versions.
-- [ ] **How IV ranges are represented in the CSV** when a Pokémon was scanned from the
-      detail page without appraisal. Possibly a range, possibly a candidate count,
-      possibly blank. This determines the `IvRange` type.
-- [ ] **Whether a "Batch Scan" mode exists at all.** Described on third-party SEO sites
-      as auto-capturing while scrolling the storage grid, but not substantiated from
-      Poke Genie's own materials. If it does exist it substantially changes Milestone 3's
-      effort; if it does not, scanning is one Pokémon per screen.
-- [ ] **Current pricing and tier naming.** "$9.99 Scan Pro + Remove Ads" is from an App
-      Store listing; naming has shifted over the years. Check in-app.
+Resolved by reading the user's actual export (149 rows, scanned 2026-08-14).
+Full verified shape in `data-sources.md`:
+
+- [x] **Exact CSV column headers and order** — 49 columns, recorded verbatim.
+- [x] **IV-range representation** — none exists: every row carries exact single
+      IVs and `Level Min == Level Max`. The `IvRange` type is unnecessary; parse
+      Min/Max and fail loudly if they ever differ.
+- [x] **Batch Scan existence** — moot: the box was scanned one-at-a-time on
+      2026-08-14; the cost is sunk either way.
+- [x] **Pricing/tier naming** — confirmed by purchase: "Scan Pro", $9.99 one-time.
+
+New, discovered in the export:
+
+- [ ] **Moves are entirely absent from the export** — all three move columns
+      empty in all 149 rows. Does the app hold moves for these scans at all
+      (check a scan record in-app)? Is there a setting or scan variant that
+      captures them? Until resolved, the pipeline cannot know actual movesets —
+      it must score with PvPoke's ranked moveset (or take manual move entry for
+      a shortlist).
+- [ ] **`Sha/Pur (G/U/L)` semantics** (values 0/1/2/empty; 2 appears only on
+      shadows). Not needed by the pipeline; low priority.
+- [ ] **Purified encoding in `Shadow/Purified`** — no purified specimen in the
+      box; presumably `2`, unobserved.
 
 ## Pokémon GO client behaviour — requires manual test by user (not resolvable from files)
 
-- [ ] **Search bar character limit** and whether comma-separated species lists behave as
-      OR across a long string. Milestone 1's output format depends on this.
-      *Minimal test:* paste a 3-name string (`azumarill,medicham,lanturn`), confirm
-      OR behaviour; then paste one full Milestone 1 chunk and check for silent
-      truncation (does the last species in the string still match?).
+- [x] **Search bar length / OR semantics** — RESOLVED 2026-08-14, tested in-game
+      by the user: the box was scanned using the chunked name searches, and the
+      **full un-chunked list was also pasted and worked — no species silently
+      truncated**. Comma separation behaves as OR throughout. No cap was hit at
+      this length; the exact limit (if one exists) remains unmeasured and no
+      longer matters for Milestone 1's purposes.
+- [x] **Evolution-line inclusion** — new observation from the same session: the
+      user enabled the game's "Show evolution line" button while scanning, which
+      pulls pre-evolutions of matched species into the results. This is why the
+      export is full of Dwebbles/Deinos/Marills, and it means search strings do
+      not need to name family members explicitly. The pipeline's family
+      expansion handles the roster side.
 - [ ] **Name-match semantics**: whether name search is prefix/substring (e.g. does
-      `mew` also match Mewtwo?). Affects how clean the Milestone 1 output is; dex
-      numbers sidestep it entirely. *Minimal test:* search `mew` and see what comes back.
+      `mew` also match Mewtwo?). Still untested — now moot for scanning (the
+      evolution-line toggle + dex numbers sidestep it); keep open only for
+      cosmetic cleanliness of future search strings.
 - [ ] **Whether appraisal state persists while swiping between Pokémon.** If it does,
       Milestone 4's exact-IV pass is dramatically cheaper than assumed.
       *Minimal test:* appraise one Pokémon, swipe to the next, check whether the

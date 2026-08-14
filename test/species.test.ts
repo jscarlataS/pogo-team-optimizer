@@ -8,7 +8,13 @@ import { collectBaseSpecies, deriveBaseName, resolveToBase } from "../src/specie
 // vendor refresh means the shape needs re-verification, which is intended.
 const gm = loadGamemaster();
 
-const entry = (speciesId: string): RankingEntry => ({ speciesId, score: 0 });
+const entry = (speciesId: string): RankingEntry => ({
+  speciesId,
+  speciesName: "",
+  score: 0,
+  scores: [0, 0, 0, 0, 0, 0],
+  moveset: ["FAST", "CHARGED"],
+});
 
 describe("deriveBaseName", () => {
   it("strips a single parenthesised suffix", () => {
