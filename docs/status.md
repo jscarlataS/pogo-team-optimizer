@@ -2,7 +2,9 @@
 
 **Last updated:** 2026-08-14
 **Current milestone:** 2+3 (merged) — pipeline complete and running on the real
-roster; **awaiting the user's evaluation-checkpoint verdict** on the top-10 teams
+roster; **awaiting the user's evaluation-checkpoint verdict** on the tiered
+team report (the user will open the next session with that feedback — start
+there; all docs are synced as of the end of session (e))
 
 ---
 
@@ -75,14 +77,17 @@ B/B/B/A (team 6) and B/D/B/A (team 1).
 **The ⭐ evaluation checkpoint — user verdict required:** would you actually
 bring these teams? Observations queued for the tuning conversation:
 
-1. **No bulk component.** PvPoke grades team #1's bulk **D** (Charjabug +
-   Sableye fragility); our scorer cannot see that. Candidate fix: a stat-product
-   component, or shield-pressure proxy.
-2. **Coverage is too linear.** Team #6 has 3 unanswered threats, team #1 has
-   9, yet #1 scores higher — best-rating averaging barely separates them.
-   Candidate fix: sigmoid around 500 and/or an explicit hard-loss penalty.
-3. **Presentation diversity.** The top 10 is one core ×8 variants. Consider
-   best-team-per-core or an appearance cap when reporting.
+1. **No bulk component.** PvPoke's Team Builder grades the optimal #1
+   (Sableye(S)/Clefable/Charjabug) **D on bulk** — fragile Charjabug +
+   Sableye; this scorer cannot see that. Candidate fix: a stat-product
+   component, or a shield-pressure proxy.
+2. **Coverage is too linear.** Sableye(S)/Mantine/Registeel has 3 unanswered
+   threats vs 9 for the #1 team, yet scores *lower* — best-rating averaging
+   barely separates hard-loss counts. Candidate fix: sigmoid around 500
+   and/or an explicit hard-loss penalty.
+3. **Presentation diversity within a tier.** The optimal list is one
+   Sableye+Clefable core × variants. Consider best-team-per-core or an
+   appearance cap when reporting.
 
 After the verdict: tune scoring here (iteration is free — matrix is cached),
 then Milestone 4.

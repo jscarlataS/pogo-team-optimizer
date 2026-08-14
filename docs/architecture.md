@@ -32,44 +32,28 @@ disk keyed by a hash of those three.
 
 ## [1] Roster ingest
 
-Source: Poke Genie "Scan Pro" CSV export.
+Source: Poke Genie "Scan Pro" CSV export. **Implemented in `src/roster.ts`**
+against the verified 49-column layout (`reference/data-sources.md`); the
+parser asserts the header verbatim and fails loudly on drift.
 
-Critical semantics: **the export is scan *history*, not a collection snapshot.**
-Consequences:
+What the real export taught us (2026-08-14), replacing this section's earlier
+assumptions:
 
-- The same Pokémon scanned twice appears twice → dedupe
-- A Pokémon transferred after scanning is still in the file → needs an "owned" flag
-  or a recency heuristic
-- There is no stable per-Pokémon ID from the game, so dedupe must be heuristic
-  (species + CP + HP + IVs + moves is usually unique enough)
+- It behaves like a **snapshot**, not raw scan history: rescanning a mon
+  updates its row in place. The parser still asserts no duplicate
+  (name, form, CP, HP, IVs) key so a semantics change is caught loudly.
+  There is still no owned/transferred flag — a mon transferred after
+  scanning would linger until the next full export.
+- **IVs are exact and `Level Min == Level Max` in every row.** The planned
+  `IvRange` type is gone; the parser refuses a range if one ever appears,
+  because ranges were never observed and are not modelled.
+- **Moves are absent from the export** — see stage 4 for the consequence.
 
-Design for this from the start rather than discovering it when the optimizer
-recommends a team containing a Pokémon that was traded away.
-
-Target internal shape:
-
-```ts
-type OwnedPokemon = {
-  id: string;              // synthetic, stable across runs
-  speciesId: string;       // PvPoke id, e.g. "azumarill"
-  displayName: string;
-  cp: number;
-  hp: number;
-  level: number;           // may be fractional (half levels)
-  ivs: { atk: number; def: number; sta: number } | IvRange;
-  fastMove: string;        // PvPoke move id
-  chargedMoves: string[];  // 1-2 entries
-  shadow: boolean;
-  purified: boolean;
-  lucky: boolean;
-  scannedAt: Date;
-};
-```
-
-`IvRange` matters: a detail-page-only scan yields a *set* of candidate IV
-combinations, not exact values. Support both from day one — see roadmap Milestone 3.
-When only a range is available, resolve to the median stat product candidate and
-mark the entry `ivPrecision: "range"` so the report can flag it.
+The implemented `OwnedPokemon` (source of truth: `src/roster.ts`) carries
+name/form/dex, CP/HP, exact IVs, level (a *floor* for builds — levels cannot
+go down), lucky/shadow flags, scan timestamps, and Poke Genie's own
+Great-League analysis block (its suggested family target + build costs),
+which the pipeline uses as a free cross-check oracle and for cost reporting.
 
 ---
 
@@ -84,9 +68,19 @@ CSV species names will not match PvPoke `speciesId` values directly. Expect fric
 - Gendered forms and cosmetic variants that are *not* separate PvPoke entries
 
 Build the lookup from `gamemaster.json` itself rather than hardcoding a map.
-Keep an explicit `overrides.json` for the handful that won't resolve automatically,
-and **fail loudly on unresolved names** — silently dropping a Pokémon means silently
-dropping a possibly-optimal team member.
+Keep an explicit overrides hook for the handful that won't resolve
+automatically, and **fail loudly on unresolved names** — silently dropping a
+Pokémon means silently dropping a possibly-optimal team member.
+
+**Family expansion (implemented in `src/resolve.ts`):** the scanned box is
+mostly pre-evolutions (Dwebble, Deino, Marill, …), so each owned mon expands
+to every family member it can evolve into, IVs carried along, following
+gamemaster `family.evolutions` (shadow lineages are pre-wired, e.g.
+`dwebble_shadow → crustle_shadow`). One GO rule is enforced on top:
+**evolution never changes regional form** — a Kanto Cubone may not become
+Alolan Marowak; converging lines with a single untagged form (Paldean Wooper
+→ Clodsire, Galarian Mr. Mime → Mr. Rime) are allowed. Poke Genie's own
+per-league targets agree with this expansion on all 149 real rows.
 
 ---
 
@@ -107,6 +101,17 @@ filter, but don't treat it as pure simulation output.
 Realistic outcome: a large collection filters down to roughly 30–80 candidates
 per league. That is the `n` that drives everything downstream.
 
+Two implemented refinements (`src/viability.ts`): a candidate must also be
+**cap-feasible** — the optimal level for its IVs may not be below the mon's
+current level, since levels cannot go down (a 1509 CP Crustle has no legal GL
+build) — and where several specimens build the same target species, only the
+best stat product is kept. Real roster: 260 expanded candidates → 41 viable.
+The same module derives the **resource tiers** the report is organised
+around: *budget* (optimal build within N levels of current, no XL) and
+*ready-now* (current form at current level, zero investment, built with the
+harness's exact-level mode — each such build must reproduce the scanned CP
+exactly, cross-checking resolution and vendored base stats against the game).
+
 ---
 
 ## [4] Matchup matrix
@@ -119,21 +124,30 @@ Approach: vendor PvPoke's `src/js/battle/Battle.js` plus its dependencies
 written for the browser, so expect to stub or shim DOM/globals it touches. It is not
 published as an npm package.
 
+Implemented in `src/sim/harness.ts` (one vm context; the exact shims and
+driving pattern are recorded in `reference/data-sources.md`, "Headless
+driving details"). Validation: the harness reproduces published leads
+matchup ratings **exactly**.
+
 Shield scenarios: 0v0, 1v1, 2v2. Prior art (crsiebler/pogo-team-optimizer) weights
 these **0.30 / 0.50 / 0.20** respectively — 1-shield weighted highest because it is
 the most common real scenario. Adopt as a starting point, expose as config.
 
-Sizing: 60 owned × 100 meta × 3 scenarios = 18,000 sims. At a few ms each that is
-seconds to low minutes. Once. Then cache.
+Sizing, measured (2026-08-14): **~0.45 ms per sim** (0.15–0.18 ms in bulk).
+The real run is 41 × 100 × 3 = 12,300 sims in ~2 s, plus a second
+25-candidate matrix for the ready-now tier — trivial. Cached on disk anyway
+so scoring iteration is instant.
 
 Cache key: hash of (sorted roster ids + meta list + gamemaster version + sim config).
 Invalidate on any change. Store as JSON or a typed array on disk.
 
-**Movesets:** each Pokémon has one fast + up to two charged moves. Simulate with the
-moveset the user *actually has*, not PvPoke's recommended one — the whole point is
-modelling the real collection. Where a Pokémon has an unlocked second charged move,
-that materially changes its matchups; where it doesn't, the tool should flag
-"unlocking X would improve this" as a report output.
+**Movesets — reality overruled the original intent here.** The export carries
+no move data at all, so simulating "the moveset the user actually has" is
+impossible from this input. Decision (2026-08-14, confirmed by the user):
+simulate every candidate with **PvPoke's ranked moveset** and treat the
+report as the TM shopping list — second-move unlock dust and Elite-TM needs
+are itemised per member. Actual movesets get recorded by hand for the
+shortlist in Milestone 4 and the runs repeated with real moves.
 
 ---
 
@@ -197,9 +211,25 @@ goals.
 Keep every weight in a single config object. You will tune these against your own
 judgment, repeatedly.
 
+As implemented (`src/score.ts`): five components — weighted coverage, threat,
+shared-weakness penalty, role coverage (best lead/swap/closer assignment over
+the six permutations), consistency — aggregated as a weighted geometric mean,
+every tunable in `ScoreConfig`. Opponents are weighted by their PvPoke
+overall score until real usage data arrives (Milestone 5). Known gaps queued
+for tuning after the evaluation checkpoint: **no bulk/stat-product
+component** (PvPoke's Team Builder graded one of our teams D on bulk; this
+scorer cannot see that), and **coverage is linear in rating**, so three hard
+losses and nine hard losses score too close together. C(n,3) enumeration
+confirmed comfortable at n=41: 10,660 teams in milliseconds.
+
 ---
 
 ## [6] Report
+
+The report is organised as **three resource tiers** — optimal (no
+constraints), budget (small power-ups only, `--max-levelup`), and ready-now
+(existing mons at current level, zero investment) — each with one fully
+detailed team plus brief alternates (`src/report.ts`, `npm run optimize`).
 
 For each recommended team:
 

@@ -54,20 +54,24 @@ the real export.
 Pokémon runs PvPoke's ranked moveset, and the report tells the user what to TM to.
 Actual-move precision is deferred to Milestone 4's shortlist pass.
 
-- [ ] Ingest the verified 49-column CSV (loud-failing parser, dedupe assert,
-      tracked ~15-row fixture)
-- [ ] Species resolution + family expansion: each owned mon → every GL-ranked
-      family member, IVs carried through (the box is mostly pre-evolutions)
-- [ ] Viability filter, including CP-cap feasibility at the current-level floor
+- [x] Ingest the verified 49-column CSV (loud-failing parser, dedupe assert,
+      tracked 17-row fixture)
+- [x] Species resolution + family expansion: each owned mon → every GL-ranked
+      family member, IVs carried through (the box is mostly pre-evolutions);
+      oracled against Poke Genie's own targets on all 149 rows
+- [x] Viability filter, including CP-cap feasibility at the current-level floor
       (levels cannot go down)
-- [ ] Headless Battle.js harness: reproduce one published PvPoke matchup rating,
-      then **measure per-sim cost** — closes the last Milestone 0 open question
-      and re-tests the brute-force decision
-- [ ] Matchup matrix: candidates × top-100 meta × 3 shield scenarios, cached on
-      disk keyed by (roster, meta, gamemaster, config) hash
-- [ ] C(n,3) team search + component scoring, every weight in one config object
-- [ ] Report: top 10 with score breakdowns, meta scorecard, coverage gaps,
-      in-game search strings, Team Builder links, build costs
+- [x] Headless Battle.js harness: reproduces published leads matchup ratings
+      **exactly**; per-sim cost measured **~0.45 ms** — last Milestone 0 open
+      question closed, brute force confirmed
+- [x] Matchup matrix: candidates × top-100 meta × 3 shield scenarios, cached on
+      disk keyed by (gamemaster, builds, meta, scenarios) hash
+- [x] C(n,3) team search + component scoring, every weight in one config object
+- [x] Report with score breakdowns, coverage gaps, in-game search strings,
+      Team Builder links, build costs — **restructured into three resource
+      tiers on user request**: optimal / budget (≤N levels per member, no XL)
+      / ready-now (current form at current level, zero investment; builds
+      must reproduce the scanned CP exactly)
 
 **Then stop and evaluate — still the highest-value checkpoint in the project.**
 Would I actually bring these teams? Compare two or three against PvPoke's Team
