@@ -135,7 +135,12 @@ meta matrix (architecture stage 4) genuinely requires driving `Battle.js`.
 Other confirmations: the GL file contains **none** of `greatLeagueIneligible`
 (checked by join), so top-N slices are already legal GBL picks; all 1,143
 `speciesId` values resolve against `gamemaster.json`; the top 100 collapse to **78
-distinct base species** once `_shadow` is stripped.
+distinct base species** once `_shadow` is stripped. Collapsing by **dex number**
+instead — which also merges regionals and cosmetic/size forms (currently
+Ninetales ×2, Stunfisk ×2, Gourgeist ×4 in the top 100) — leaves **73**. The
+Milestone 1 search-string tool uses the dex-level count, because in-game name and
+dex search cannot distinguish those forms anyway; don't treat 78 as its expected
+output.
 
 ### gamemaster.json — verified shape
 

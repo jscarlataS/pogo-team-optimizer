@@ -51,4 +51,4 @@ Milestone 2 in the roadmap.
 
 ## Current phase
 
-Nothing built yet. Start at Milestone 0 in `docs/roadmap.md`.
+See `docs/status.md` — it is the source of truth for project state.
