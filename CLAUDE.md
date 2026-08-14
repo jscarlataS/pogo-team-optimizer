@@ -17,7 +17,9 @@ search string so I can find the members quickly.
 
 - Node + TypeScript, run locally on macOS
 - No server, no UI initially — CLI in, JSON/markdown out
-- PvPoke's data files vendored into `data/` (MIT licensed, attribution retained)
+- PvPoke's data + battle code vendored into `vendor/pvpoke/` (MIT licensed,
+  attribution retained); `data/` is the gitignored drop point for the user's own
+  Poke Genie CSV exports
 - PvPoke's `Battle.js` driven headlessly for simulation rather than reimplemented
 
 ## Hard constraints — do not violate these

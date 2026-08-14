@@ -1,5 +1,6 @@
 node_modules/
 vendor/
+data/
 out/*
 !out/gl-search-strings.md
 .DS_Store
