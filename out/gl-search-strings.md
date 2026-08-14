@@ -58,17 +58,14 @@ Mimikyu,Lickilicky,Tinkaton,Altaria,Empoleon,Quagsire,Jellicent,Forretress,Ninet
 
 ## Manual in-game test checklist
 
-These resolve the open items in `docs/reference/open-questions.md` — record
-the observed behaviour there afterwards.
+Most of the original checklist is resolved (see `docs/reference/open-questions.md`):
+commas are OR, the full un-chunked list pasted without truncation, and chunk
+coverage was verified during the Great League scanning pass. Still open,
+cosmetic only:
 
-1. **OR semantics** — paste `azumarill,medicham,lanturn`. Expect: only those
-   three species (any variant: shadow, lucky, etc.). Anything else appearing,
-   or nothing appearing, means commas do not mean OR.
-2. **Prefix/substring matching** — search `mew`. Note whether Mewtwo (and
+1. **Prefix/substring matching** — search `mew`. Note whether Mewtwo (and
    anything else) matches; this tells us how much noise name strings admit.
-3. **Silent truncation** — paste each chunk above and check its labelled last
-   species still matches (own one, or watch the shown count change as you
-   shorten the string). If the last species of a chunk is missing, the field
-   cut the string: lower `--chunk-chars` and rerun.
-4. **Coverage** — with a chunk pasted, the box should show only species from
-   this list. That is Milestone 1's done-criterion.
+
+Tip while scanning: the game's search also filters by CP — appending a range
+like `&cp1500-2500` should show only specimens in the Ultra band (standard
+GO search syntax, untested by us; verify once before relying on it).

@@ -7,13 +7,29 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DATA_DIR = join(REPO_ROOT, "vendor", "pvpoke", "src", "data");
 
 export const GAMEMASTER_PATH = join(DATA_DIR, "gamemaster.json");
-export const RANKINGS_1500_PATH = join(
-  DATA_DIR,
-  "rankings",
-  "all",
-  "overall",
-  "rankings-1500.json",
-);
+
+/**
+ * A GBL league. `cap` is the CP limit and doubles as PvPoke's file/URL key
+ * (rankings-<cap>.json, /team-builder/all/<cap>/). Master League (10000) is
+ * deliberately absent until its milestone chunk — "ready now" semantics and
+ * XL costing need their own thought there.
+ */
+export interface League {
+  key: "great" | "ultra";
+  cap: number;
+  label: string;
+  /** Short tag for report lines and file names, e.g. "GL". */
+  short: string;
+}
+
+export const LEAGUES: Readonly<Record<League["key"], League>> = {
+  great: { key: "great", cap: 1500, label: "Great League", short: "GL" },
+  ultra: { key: "ultra", cap: 2500, label: "Ultra League", short: "UL" },
+};
+
+export function overallRankingsPath(league: League): string {
+  return join(DATA_DIR, "rankings", "all", "overall", `rankings-${league.cap}.json`);
+}
 
 // Only the fields this project actually consumes. The real files carry many
 // more keys (documented in docs/reference/data-sources.md); loaders narrow to
@@ -75,20 +91,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function loadRankings1500(): RankingEntry[] {
-  const data = readJson(RANKINGS_1500_PATH);
+export function loadRankings(league: League): RankingEntry[] {
+  const path = overallRankingsPath(league);
+  const data = readJson(path);
   if (!Array.isArray(data) || data.length === 0) {
-    throw shapeError(RANKINGS_1500_PATH, "expected a non-empty array");
+    throw shapeError(path, "expected a non-empty array");
   }
   const entries = data.map((raw, i): RankingEntry => {
     if (!isRecord(raw) || typeof raw.speciesId !== "string" || !Number.isFinite(raw.score)) {
       throw shapeError(
-        RANKINGS_1500_PATH,
+        path,
         `entry ${i} lacks a string speciesId and finite numeric score`,
       );
     }
     if (typeof raw.speciesName !== "string") {
-      throw shapeError(RANKINGS_1500_PATH, `entry ${i} lacks a string speciesName`);
+      throw shapeError(path, `entry ${i} lacks a string speciesName`);
     }
     const { scores, moveset } = raw;
     if (
@@ -97,7 +114,7 @@ export function loadRankings1500(): RankingEntry[] {
       scores.some((s) => !Number.isFinite(s))
     ) {
       throw shapeError(
-        RANKINGS_1500_PATH,
+        path,
         `entry ${i} ("${raw.speciesId}") lacks the 6-element numeric scores array`,
       );
     }
@@ -108,7 +125,7 @@ export function loadRankings1500(): RankingEntry[] {
       moveset.some((m) => typeof m !== "string" || m === "")
     ) {
       throw shapeError(
-        RANKINGS_1500_PATH,
+        path,
         `entry ${i} ("${raw.speciesId}") lacks a 2–3 element moveset array`,
       );
     }
@@ -122,10 +139,7 @@ export function loadRankings1500(): RankingEntry[] {
   });
   for (let i = 1; i < entries.length; i++) {
     if (entries[i]!.score > entries[i - 1]!.score) {
-      throw shapeError(
-        RANKINGS_1500_PATH,
-        `entries are not sorted by score descending (index ${i})`,
-      );
+      throw shapeError(path, `entries are not sorted by score descending (index ${i})`);
     }
   }
   return entries;

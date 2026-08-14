@@ -1,4 +1,6 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Parser for the Poke Genie "Scan Pro" CSV export. The 49-column layout below
 // was verified against a real export on 2026-08-14 and is recorded in
@@ -60,6 +62,8 @@ export interface OwnedPokemon {
   dust: number;
   /** Absent iff current CP already exceeds 1500 (verified equivalence). */
   greatLeague?: LeagueAnalysis;
+  /** Absent iff current CP already exceeds 2500 (verified equivalence). */
+  ultraLeague?: LeagueAnalysis;
 }
 
 function rowError(source: string, line: number, detail: string): Error {
@@ -263,6 +267,10 @@ export function parseRosterCsv(text: string, source: string): OwnedPokemon[] {
     if (gl !== undefined) {
       mon.greatLeague = gl;
     }
+    const ul = parseLeagueBlock(get, "U", source, lineNo);
+    if (ul !== undefined) {
+      mon.ultraLeague = ul;
+    }
 
     mon.id = [
       mon.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -287,6 +295,43 @@ export function parseRosterCsv(text: string, source: string): OwnedPokemon[] {
     roster.push(mon);
   }
   return roster;
+}
+
+const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
+
+/**
+ * The roster CSV the CLIs use when --roster is not given: the most recently
+ * modified .csv in data/. Exports accumulate there (the user re-exports after
+ * new scans, keeping old files), so "newest" is the live one — but every CLI
+ * logs which file was picked, loudly, so a surprise here is visible.
+ */
+export function defaultRosterPath(): { path: string; note: string } {
+  let names: string[];
+  try {
+    names = readdirSync(DATA_DIR).filter((n) => n.toLowerCase().endsWith(".csv"));
+  } catch {
+    names = [];
+  }
+  if (names.length === 0) {
+    throw new Error(
+      `No roster CSV found in ${DATA_DIR}. Export from Poke Genie (Scan Pro) ` +
+        `and drop the .csv there, or pass --roster <path>.`,
+    );
+  }
+  const dated = names
+    .map((n) => ({ path: join(DATA_DIR, n), mtime: statSync(join(DATA_DIR, n)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime);
+  const chosen = dated[0]!;
+  let note =
+    names.length === 1
+      ? `roster file: ${chosen.path}`
+      : `roster file: ${chosen.path} (newest of ${names.length} CSVs in data/ — pass --roster to override)`;
+  // A bulk copy (e.g. moving the repo between machines) can leave all CSVs
+  // with near-identical mtimes; "newest" is then luck, not information.
+  if (dated.length > 1 && chosen.mtime - dated[1]!.mtime < 60_000) {
+    note += ` ⚠ mtimes are nearly identical — verify this is the right file`;
+  }
+  return { path: chosen.path, note };
 }
 
 export function loadRoster(path: string): OwnedPokemon[] {

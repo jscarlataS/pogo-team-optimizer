@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { loadGamemaster, loadRankings1500 } from "../data/pvpoke.js";
-import { loadRoster } from "../roster.js";
+import { loadGamemaster, loadRankings } from "../data/pvpoke.js";
+import { parseLeague } from "./common.js";
+import { defaultRosterPath, loadRoster } from "../roster.js";
 import { expandRoster } from "../resolve.js";
 import { PvpokeSim } from "../sim/harness.js";
 import {
@@ -18,12 +19,13 @@ import type { TierSection } from "../report.js";
 
 const USAGE = `Usage: npm run optimize [-- options]
 
-Read the Poke Genie export and print the strongest Great League teams the
-roster can build, in three resource tiers: optimal (no constraints), budget
-(small power-ups only), and ready-now (existing mons, zero investment).
+Read the Poke Genie export and print the strongest teams the roster can build
+for the chosen league, in three resource tiers: optimal (no constraints),
+budget (small power-ups only), and ready-now (existing mons, zero investment).
 
 Options:
-  --roster <path>     Poke Genie CSV (default data/poke_genie_export.csv)
+  --league <l>        great (default) or ultra — CP cap, rankings, and meta
+  --roster <path>     Poke Genie CSV (default: newest .csv in data/)
   --teams <n>         teams per tier: 1 detailed + n-1 brief (default 5)
   --meta <n>          opponent pool size (default ${DEFAULT_MATRIX.metaN})
   --viability-top <n> ranking entries that count as viable (default ${DEFAULT_VIABILITY.topN})
@@ -45,7 +47,8 @@ function positiveInt(name: string, value: string): number {
 function main(): void {
   const { values } = parseArgs({
     options: {
-      roster: { type: "string", default: "data/poke_genie_export.csv" },
+      league: { type: "string", default: "great" },
+      roster: { type: "string" },
       teams: { type: "string", default: "5" },
       meta: { type: "string", default: String(DEFAULT_MATRIX.metaN) },
       "viability-top": { type: "string", default: String(DEFAULT_VIABILITY.topN) },
@@ -60,6 +63,7 @@ function main(): void {
     process.stdout.write(USAGE);
     return;
   }
+  const league = parseLeague(values.league);
   const teamsPerTier = positiveInt("teams", values.teams);
   const metaN = positiveInt("meta", values.meta);
   const viabilityTop = positiveInt("viability-top", values["viability-top"]);
@@ -68,12 +72,18 @@ function main(): void {
     process.stderr.write(`${line}\n`);
   };
 
-  const roster = loadRoster(values.roster);
+  let rosterPath = values.roster;
+  if (rosterPath === undefined) {
+    const picked = defaultRosterPath();
+    rosterPath = picked.path;
+    log(picked.note);
+  }
+  const roster = loadRoster(rosterPath);
   const gm = loadGamemaster();
-  const rankings = loadRankings1500();
-  log(`roster: ${roster.length} scanned mons`);
+  const rankings = loadRankings(league);
+  log(`league: ${league.label} (cap ${league.cap}); roster: ${roster.length} scanned mons`);
 
-  const sim = new PvpokeSim();
+  const sim = new PvpokeSim(league.cap);
   const candidates = expandRoster(roster, gm);
   const scoreConfig = {
     ...DEFAULT_SCORE_CONFIG,
@@ -100,7 +110,7 @@ function main(): void {
   const matrix = computeMatrix(viable, rankings, sim, gm.timestamp, { metaN }, log);
   const { members, meta } = buildProfiles(viable, matrix, rankings, scoreConfig);
   const optimalSearch = searchTeams(members, meta, scoreConfig, teamsPerTier);
-  log(`optimal: ${optimalSearch.teamsScored.toLocaleString()} teams scored`);
+  log(`optimal: ${optimalSearch.teamsScored.toLocaleString("en-US")} teams scored`);
 
   const tiers: TierSection[] = [
     {
@@ -135,7 +145,7 @@ function main(): void {
     budgetTier.top = budgetSearch.top;
     log(
       `budget (≤${maxLevelUp} levels): pool ${budgetMembers.length}, ` +
-        `${budgetSearch.teamsScored.toLocaleString()} teams scored`,
+        `${budgetSearch.teamsScored.toLocaleString("en-US")} teams scored`,
     );
   } else {
     budgetTier.skippedReason =
@@ -177,7 +187,7 @@ function main(): void {
     readyTier.top = readySearch.top;
     log(
       `ready-now: pool ${ready.viable.length}, ` +
-        `${readySearch.teamsScored.toLocaleString()} teams scored`,
+        `${readySearch.teamsScored.toLocaleString("en-US")} teams scored`,
     );
   } else {
     readyTier.skippedReason =
@@ -201,6 +211,7 @@ function main(): void {
         2,
       )
     : renderReport({
+        league,
         rosterSize: roster.length,
         candidateCount: candidates.length,
         tiers,

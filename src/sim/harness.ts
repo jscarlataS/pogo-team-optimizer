@@ -114,8 +114,11 @@ export class PvpokeSim {
   private readonly PokemonCtor: any;
   readonly consoleErrors: string[] = [];
   simCount = 0;
+  /** League CP cap this sim is bound to; opponent default builds derive from it. */
+  readonly cap: number;
 
-  constructor() {
+  constructor(cap = 1500) {
+    this.cap = cap;
     const pendingAjax: Array<() => void> = [];
     const sandbox: Record<string, unknown> = {
       console: {
@@ -147,7 +150,7 @@ export class PvpokeSim {
     }
     this.PokemonCtor = runInContext("Pokemon", this.ctx);
     this.battle = runInContext("new Battle()", this.ctx);
-    this.battle.setCP(1500);
+    this.battle.setCP(this.cap);
   }
 
   /**
@@ -225,6 +228,6 @@ export class PvpokeSim {
 
   teamBuilderUrl(members: readonly any[]): string {
     const str = members.map((m) => m.generateURLPokeStr("team-builder")).join(",");
-    return `https://pvpoke.com/team-builder/all/1500/${encodeURIComponent(str)}`;
+    return `https://pvpoke.com/team-builder/all/${this.cap}/${encodeURIComponent(str)}`;
   }
 }

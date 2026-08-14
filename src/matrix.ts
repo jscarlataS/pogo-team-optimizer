@@ -42,16 +42,19 @@ const CACHE_DIR = join(REPO_ROOT, "out", "cache");
 
 /**
  * Cache identity: everything the ratings are a pure function of — vendored
- * gamemaster version, opponent pool with movesets, scenario set, and each
+ * gamemaster version, league CP cap (opponent default builds derive from it
+ * via battle.getCP()), opponent pool with movesets, scenario set, and each
  * candidate's exact build (species, IVs, level, moveset).
  */
 function cacheKey(
   timestamp: string,
+  cap: number,
   viable: readonly ViableCandidate[],
   metaEntries: readonly RankingEntry[],
 ): string {
   const material = JSON.stringify({
     timestamp,
+    cap,
     scenarios: SHIELD_SCENARIOS.map((s) => s.key),
     meta: metaEntries.map((e) => [e.speciesId, e.moveset]),
     candidates: viable.map((v) => [
@@ -73,7 +76,7 @@ export function computeMatrix(
   log: (line: string) => void = () => {},
 ): MatchupMatrix {
   const metaEntries = rankings.slice(0, config.metaN);
-  const key = cacheKey(gamemasterTimestamp, viable, metaEntries);
+  const key = cacheKey(gamemasterTimestamp, sim.cap, viable, metaEntries);
   const cachePath = join(CACHE_DIR, `matrix-${key}.json`);
 
   if (existsSync(cachePath)) {

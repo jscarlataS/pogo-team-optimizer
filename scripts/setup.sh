@@ -17,6 +17,15 @@ PVPOKE_REMOTE="https://github.com/pvpoke/pvpoke.git"
 VENDOR_DIR="vendor/pvpoke"
 
 echo "==> Node toolchain"
+if ! command -v node >/dev/null 2>&1; then
+  echo "    Node is not installed (need >= 20)." >&2
+  echo "    Either use your package manager, or install user-locally without sudo:" >&2
+  echo "      curl -fsSLO https://nodejs.org/dist/latest-v24.x/node-v24.x.y-linux-x64.tar.xz" >&2
+  echo "      (pick the real filename from https://nodejs.org/dist/latest-v24.x/)" >&2
+  echo "      mkdir -p ~/.local/node && tar -xJf node-*.tar.xz -C ~/.local/node --strip-components=1" >&2
+  echo "      ln -s ~/.local/node/bin/{node,npm,npx} ~/.local/bin/" >&2
+  exit 1
+fi
 node -v
 npm -v
 

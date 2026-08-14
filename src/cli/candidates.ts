@@ -1,6 +1,7 @@
 import { parseArgs } from "node:util";
-import { loadGamemaster, loadRankings1500 } from "../data/pvpoke.js";
-import { loadRoster } from "../roster.js";
+import { loadGamemaster, loadRankings } from "../data/pvpoke.js";
+import { parseLeague } from "./common.js";
+import { defaultRosterPath, loadRoster } from "../roster.js";
 import { expandRoster } from "../resolve.js";
 import { PvpokeSim } from "../sim/harness.js";
 import { DEFAULT_VIABILITY, selectViableCandidates } from "../viability.js";
@@ -12,7 +13,8 @@ import { DEFAULT_VIABILITY, selectViableCandidates } from "../viability.js";
 const USAGE = `Usage: npm run candidates [-- options]
 
 Options:
-  --roster <path>  Poke Genie CSV (default data/poke_genie_export.csv)
+  --league <l>     great (default) or ultra — CP cap, rankings, and meta
+  --roster <path>  Poke Genie CSV (default: newest .csv in data/)
   --top <n>        ranking entries that count as the meta (default 100)
   --help
 `;
@@ -20,7 +22,8 @@ Options:
 function main(): void {
   const { values } = parseArgs({
     options: {
-      roster: { type: "string", default: "data/poke_genie_export.csv" },
+      league: { type: "string", default: "great" },
+      roster: { type: "string" },
       top: { type: "string", default: String(DEFAULT_VIABILITY.topN) },
       help: { type: "boolean", default: false },
     },
@@ -29,15 +32,22 @@ function main(): void {
     process.stdout.write(USAGE);
     return;
   }
+  const league = parseLeague(values.league);
   const topN = Number(values.top);
   if (!Number.isInteger(topN) || topN < 1) {
     throw new Error(`--top must be a positive integer, got "${values.top}"`);
   }
 
-  const roster = loadRoster(values.roster);
+  let rosterPath = values.roster;
+  if (rosterPath === undefined) {
+    const picked = defaultRosterPath();
+    rosterPath = picked.path;
+    process.stderr.write(`${picked.note}\n`);
+  }
+  const roster = loadRoster(rosterPath);
   const gm = loadGamemaster();
-  const rankings = loadRankings1500();
-  const sim = new PvpokeSim();
+  const rankings = loadRankings(league);
+  const sim = new PvpokeSim(league.cap);
   const candidates = expandRoster(roster, gm);
   const { viable, infeasible, outclassed } = selectViableCandidates(
     candidates,
@@ -47,8 +57,8 @@ function main(): void {
   );
 
   process.stdout.write(
-    `${roster.length} scanned mons → ${candidates.length} family-expanded candidates → ` +
-      `${viable.length} viable (meta top ${topN})\n\n`,
+    `${league.label}: ${roster.length} scanned mons → ${candidates.length} ` +
+      `family-expanded candidates → ${viable.length} viable (meta top ${topN})\n\n`,
   );
   const pad = (s: string | number, n: number): string => String(s).padEnd(n);
   process.stdout.write(

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadGamemaster, loadRankings1500 } from "../src/data/pvpoke.js";
+import { LEAGUES, loadGamemaster, loadRankings } from "../src/data/pvpoke.js";
 import { collectBaseSpecies } from "../src/species.js";
 import { chunkTerms, joinChunk } from "../src/searchString.js";
 
@@ -8,7 +8,7 @@ import { chunkTerms, joinChunk } from "../src/searchString.js";
 // refresh changes them, that is exactly the moment to re-verify shapes against
 // docs/reference/data-sources.md — a red test here is working as intended.
 describe("top-100 Great League pipeline", () => {
-  const rankings = loadRankings1500();
+  const rankings = loadRankings(LEAGUES.great);
   const gm = loadGamemaster();
   const { species, warnings } = collectBaseSpecies(rankings.slice(0, 100), gm);
 
@@ -41,6 +41,36 @@ describe("top-100 Great League pipeline", () => {
       for (const chunk of chunks) {
         expect(joinChunk(chunk).length).toBeLessThanOrEqual(200);
       }
+    }
+  });
+});
+
+describe("top-100 Ultra League pipeline", () => {
+  const rankings = loadRankings(LEAGUES.ultra);
+  const gm = loadGamemaster();
+  const { species, warnings } = collectBaseSpecies(rankings.slice(0, 100), gm);
+
+  it("loads the full rankings file", () => {
+    expect(rankings).toHaveLength(841);
+  });
+
+  it("collapses the top 100 entries to 70 base species", () => {
+    expect(species).toHaveLength(70);
+  });
+
+  it("keeps rank order (Mimikyu is #1 in Ultra too)", () => {
+    expect(species[0]).toEqual({ dex: 778, baseName: "Mimikyu" });
+  });
+
+  it("flags Kommo-o — the first non-plain-letter name — and stays comma-safe", () => {
+    // The GL top 100 was all plain letters; UL is not. The hyphen is harmless
+    // in a comma-separated search string, but the warning must surface it
+    // rather than silently assuming the GL invariant.
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/Kommo-o/);
+    for (const s of species) {
+      expect(s.baseName).toMatch(/^[A-Za-z-]+$/);
+      expect(s.baseName).not.toContain(",");
     }
   });
 });

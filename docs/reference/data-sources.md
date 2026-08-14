@@ -142,6 +142,27 @@ Milestone 1 search-string tool uses the dex-level count, because in-game name an
 dex search cannot distinguish those forms anyway; don't treat 78 as its expected
 output.
 
+### Other league ranking files — verified 2026-08-14 (Milestone 5 planning)
+
+Read directly from the vendored commit; same procedure as the GL file:
+
+- `rankings-2500.json` (Ultra): **841 entries**, identical key set to the GL
+  shape above, sorted by `score` descending. All 841 `speciesId` values resolve
+  against `gamemaster.json`; no entry's gamemaster record carries any
+  `*Ineligible` tag, so ineligible species are pre-excluded exactly as in GL.
+  Top 100 collapse to **71** distinct ids once `_shadow` is stripped (dex-level
+  collapse not yet counted). Top of the file at this commit: Mimikyu,
+  Lickilicky, Corviknight(+Shadow), Tinkaton, Florges, Empoleon(+Shadow),
+  Virizion, Galarian Moltres.
+- `rankings-10000.json` (Master): **405 entries**, same shape, same checks pass.
+  Top 5: Zacian (Crowned Sword), Palkia Origin, Metagross, Kyurem White, Lunala.
+
+**Correction to the shape above:** matchup/counter entries may carry a third
+key, `opRating` (the opponent's raw rating from the same sim), alongside
+`opponent` and `rating`. This is not league-specific — 1040 of 1143 GL entries
+have it too; the original doc example happened to be drawn from one that
+doesn't. Loaders stay narrow and ignore it.
+
 ### gamemaster.json — verified shape
 
 Top-level keys: `id`, `title`, `timestamp`, `settings`, `cups`, `formats`, `moves`,
@@ -364,6 +385,10 @@ Observed facts — whole-file checks over all 149 rows, not row sampling:
   optimal build. A block is entirely empty **iff** current CP already exceeds the
   league cap (confirmed: min CP among rows with empty G/U/L blocks is
   1509/2525/516). `(L)` is **Little League (500)**, not Legendary.
+  Re-confirmed exactly for `(U)` on the 158-row export (2026-08-14, M5
+  planning): the 7 rows with CP > 2500 are precisely the 7 rows with an empty
+  U-block. So `Name (U)`/`Form (U)` give the same free family-expansion oracle
+  for Ultra that `(G)` gave for Great, on 151 of 158 rows.
 - Enums observed: `Form` ∈ {empty, `Normal`, `Alola`, `Galar`, `Paldea`} — empty
   and `Normal` both mean base form. `Gender` ∈ {♀, ♂, empty}. `Lucky`,
   `Favorite`, `Shadow/Purified` are 0/1 flags — **no purified Pokémon exists in

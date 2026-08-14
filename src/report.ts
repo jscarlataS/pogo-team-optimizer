@@ -1,4 +1,4 @@
-import type { Gamemaster, RankingEntry } from "./data/pvpoke.js";
+import type { Gamemaster, League, RankingEntry } from "./data/pvpoke.js";
 import { deriveBaseName } from "./species.js";
 import type { Candidate } from "./resolve.js";
 import type { MetaProfile, ScoreConfig, TeamScore } from "./score.js";
@@ -27,6 +27,7 @@ export interface TierSection {
 }
 
 export interface ReportInputs {
+  league: League;
   rosterSize: number;
   candidateCount: number;
   tiers: readonly TierSection[];
@@ -67,14 +68,19 @@ function eliteTmMoves(v: ViableCandidate): string[] {
   );
 }
 
-function buildCostLine(v: ViableCandidate, gm: Gamemaster, tier: TierKey): string {
+function buildCostLine(
+  v: ViableCandidate,
+  gm: Gamemaster,
+  tier: TierKey,
+  league: League,
+): string {
   const parts: string[] = [];
   if (tier === "ready") {
     parts.push("used as-is, no power-ups");
     const unlock = secondMoveUnlock(v);
     if (unlock > 0) {
       parts.push(
-        `2nd charged move assumed unlocked (${unlock.toLocaleString()} dust if not)`,
+        `2nd charged move assumed unlocked (${unlock.toLocaleString("en-US")} dust if not)`,
       );
     }
   } else {
@@ -82,13 +88,13 @@ function buildCostLine(v: ViableCandidate, gm: Gamemaster, tier: TierKey): strin
     if (v.candidate.evolutionSteps > 0) {
       parts.push(`evolve ×${v.candidate.evolutionSteps}`);
     }
-    // Poke Genie's dust/candy figures apply when its suggested GL target is
-    // the same family member we chose (matched by base name).
+    // Poke Genie's dust/candy figures apply when its suggested target for
+    // this league is the same family member we chose (matched by base name).
     const target = gm.pokemonById.get(v.candidate.targetSpeciesId);
-    const pg = o.greatLeague;
+    const pg = league.key === "great" ? o.greatLeague : o.ultraLeague;
     if (pg && target && deriveBaseName(target.speciesName) === pg.targetName) {
       if (pg.dustCost > 0 || pg.candyCost > 0) {
-        parts.push(`${pg.dustCost.toLocaleString()} dust + ${pg.candyCost} candy`);
+        parts.push(`${pg.dustCost.toLocaleString("en-US")} dust + ${pg.candyCost} candy`);
       } else {
         parts.push("already at optimal level");
       }
@@ -99,7 +105,7 @@ function buildCostLine(v: ViableCandidate, gm: Gamemaster, tier: TierKey): strin
     }
     const unlock = secondMoveUnlock(v);
     if (unlock > 0) {
-      parts.push(`2nd charged move: ${unlock.toLocaleString()} dust`);
+      parts.push(`2nd charged move: ${unlock.toLocaleString("en-US")} dust`);
     }
     if (v.build.level > 40) {
       parts.push("needs XL candy");
@@ -117,9 +123,9 @@ export function renderTeamDetail(
   team: TeamScore,
   viable: readonly ViableCandidate[],
   tierKey: TierKey,
-  ctx: { gm: Gamemaster; config: ScoreConfig; sim: PvpokeSim },
+  ctx: { gm: Gamemaster; config: ScoreConfig; sim: PvpokeSim; league: League },
 ): string {
-  const { gm, config, sim } = ctx;
+  const { gm, config, sim, league } = ctx;
   const memberViable = team.indices.map((i) => viable[i]!);
   const lines: string[] = [];
   const c = team.components;
@@ -137,7 +143,7 @@ export function renderTeamDetail(
       `- **${displayName(v.candidate.targetSpeciesId, gm)}** ` +
         `(from ${o.name} CP${o.cp} L${o.level} ${o.ivs.atk}/${o.ivs.def}/${o.ivs.hp})` +
         ` — build L${v.build.level} CP${v.build.cp}; ${moves[0]} + ${moves.slice(1).join(" / ")}` +
-        `; ${buildCostLine(v, gm, tierKey)}`,
+        `; ${buildCostLine(v, gm, tierKey, league)}`,
     );
   }
   lines.push("");
@@ -197,9 +203,9 @@ function tierSection(tier: TierSection, inputs: ReportInputs): string {
 }
 
 export function renderReport(inputs: ReportInputs): string {
-  const { tiers, infeasible, meta, config, gm } = inputs;
+  const { league, tiers, infeasible, meta, config, gm } = inputs;
   const sections: string[] = [];
-  sections.push("# Great League teams from your roster");
+  sections.push(`# ${league.label} teams from your roster`);
   sections.push("");
   const optimal = tiers.find((t) => t.key === "optimal");
   sections.push(
@@ -208,7 +214,7 @@ export function renderReport(inputs: ReportInputs): string {
       tiers.map((t) => `${t.poolSize} ${t.key}`).join(", "),
   );
   sections.push(
-    `- Meta: top ${meta.ids.length} GL ranking entries, ` +
+    `- Meta: top ${meta.ids.length} ${league.short} ranking entries, ` +
       `${config.opponentWeighting === "score" ? "score-weighted" : "uniformly weighted"}; ` +
       `shield scenarios 0v0/1v1/2v2 weighted ` +
       `${config.shieldWeights["0v0"]}/${config.shieldWeights["1v1"]}/${config.shieldWeights["2v2"]}`,
@@ -238,7 +244,7 @@ export function renderReport(inputs: ReportInputs): string {
       .sort((a, b) => b[1] - a[1])
       .filter(([, n]) => n > 1);
     if (recurring.length > 0) {
-      sections.push("## Recurring members (Milestone 4 appraisal shortlist)");
+      sections.push("## Recurring members across the top optimal teams");
       sections.push("");
       for (const [id, n] of recurring) {
         sections.push(
@@ -250,7 +256,7 @@ export function renderReport(inputs: ReportInputs): string {
   }
 
   if (infeasible.length > 0) {
-    sections.push("## Meta-relevant but unbuildable (already over 1500)");
+    sections.push(`## Meta-relevant but unbuildable (already over ${league.cap})`);
     sections.push("");
     for (const c of infeasible) {
       sections.push(

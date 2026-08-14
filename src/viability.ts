@@ -3,9 +3,11 @@ import type { Candidate } from "./resolve.js";
 import type { PvpokeSim } from "./sim/harness.js";
 
 // Stage 3: cut the expanded candidate list down to what is worth simulating.
-// A candidate survives iff its target species is in the Great League meta
+// A candidate survives iff its target species is in the league's meta
 // (top-N ranking entries) AND a legal build exists (optimal level under the
-// cap is not below the mon's current level). Where several owned mons build
+// cap is not below the mon's current level). The league comes in through the
+// sim (its CP cap) and the rankings (the league's file). Where several owned
+// mons build
 // the same target species, only the best stat-product specimen is kept —
 // duplicate species on one team is not a line this tool pursues.
 
@@ -19,7 +21,7 @@ export const DEFAULT_VIABILITY: ViabilityConfig = { topN: 100 };
 export interface ViableCandidate {
   candidate: Candidate;
   ranking: RankingEntry;
-  /** 1-based position in the overall GL rankings. */
+  /** 1-based position in the league's overall rankings. */
   rank: number;
   /** Battle-ready vendor Pokemon at optimal level with real IVs + ranked moves. */
   build: {
@@ -138,7 +140,7 @@ export function selectReadyCandidates(
     if (ranked === undefined) {
       continue;
     }
-    if (candidate.owned.cp > 1500) {
+    if (candidate.owned.cp > sim.cap) {
       infeasible.push(candidate);
       continue;
     }

@@ -120,20 +120,28 @@ What replaces it, already in practice:
 ## Milestone 5 — Sharpening — ACTIVE NEXT (/plan target)
 
 Promoted by user request (2026-08-14): **Ultra League first**, then Master.
-Known code touchpoints for the league generalisation: `PvpokeSim` hardcodes
-`setCP(1500)` in its constructor; `selectReadyCandidates` hardcodes the 1500
-cap; `loadRankings1500` is GL-only (rankings-2500/10000/500 are already
-vendored); `species-list` emits only the GL search string (a UL string drives
-the next scanning pass — scans are additive, never wipe Poke Genie);
-report/tier labels assume GL. The matrix cache already keys on every input
-that changes. The export's `(U)` league block gives the same free per-scan
-oracle that validated GL. Master expectation: XL-legendary territory —
-"ready now" will be thin and the valuable output is investment advice.
+The touchpoint list below was verified accurate at implementation (2026-08-14),
+with one correction: "the matrix cache already keys on every input that
+changes" was **wrong** — the league cap was missing from the key even though
+opponent default builds derive from it; fixed by adding the cap to the key.
+Original touchpoints, all done: `PvpokeSim` `setCP(1500)`;
+`selectReadyCandidates` 1500 cap; `loadRankings1500`; GL-only `species-list`;
+GL report/tier labels; plus the Team Builder URL's hardcoded `/all/1500/`.
+Master expectation: XL-legendary territory — "ready now" will be thin and the
+valuable output is investment advice.
 
 Roughly in value order (Ultra/Master promoted to the top by the user):
 
-- [ ] Ultra League (then Master) — league parameter through the stack, UL
-      search string, UL report
+- [x] Ultra League (2026-08-14) — `League` value threaded through the stack,
+      `--league great|ultra` on all four CLIs; harness at 2500 reproduces
+      published UL matchup ratings **exactly**; family expansion agrees with
+      Poke Genie's `Name (U)` oracle on every export row; UL report
+      (`out/teams-ultra.md`) + UL search strings (`out/ul-search-strings.md`,
+      with a new-species-only section for the additive scanning pass).
+      Awaiting the user's field verdict.
+- [ ] Master League — mostly plumbing now (rankings-10000 verified present,
+      405 entries, same shape; extend the `League` table), but "ready now",
+      budget, and XL costing semantics need their own pass
 - [ ] Scoring-tuning items carried from the ⭐ checkpoint (see status.md):
       bulk component, coverage linearity, viability-cutoff width, per-core
       presentation diversity

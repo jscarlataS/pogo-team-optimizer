@@ -15,11 +15,12 @@ search string so I can find the members quickly.
 
 ## Stack
 
-- Node + TypeScript, run locally on macOS
+- Node + TypeScript, run locally (macOS originally; now also WSL2/Linux — `scripts/setup.sh` bootstraps a fresh machine)
 - No server, no UI initially — CLI in, JSON/markdown out
 - PvPoke's data + battle code vendored into `vendor/pvpoke/` (MIT licensed,
-  attribution retained); `data/` is the gitignored drop point for the user's own
-  Poke Genie CSV exports
+  attribution retained); `data/` holds the user's own Poke Genie CSV exports —
+  committed (private repo; the one input no script can regenerate), CLIs
+  default to the newest one
 - PvPoke's `Battle.js` driven headlessly for simulation rather than reimplemented
 
 ## Hard constraints — do not violate these

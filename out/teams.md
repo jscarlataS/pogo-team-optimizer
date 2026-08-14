@@ -13,9 +13,9 @@ Every member built to its best legal level, evolutions and second-move unlocks i
 
 Score parts (× weight): coverage 65.4 (0.35) · threat 88.3 (0.2) · weakness 100.0 (0.15) · roles 88.4 (0.2) · consistency 97.3 (0.1)
 
-- **Sableye (Shadow)** (from Sableye CP318 L8 13/6/15) — build L44.5 CP1494; Shadow Claw + Foul Play / Drain Punch; 237 200 dust + 215 candy · 2nd charged move: 75 000 dust · needs XL candy
-- **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; already at optimal level · 2nd charged move: 10 000 dust
-- **Charjabug** (from Grubbin CP319 L13 2/12/11) — build L38.5 CP1494; Volt Switch + X Scissor / Discharge; evolve ×1 · power up L13 → L38.5 · 2nd charged move: 10 000 dust · Elite TM: Volt Switch
+- **Sableye (Shadow)** (from Sableye CP318 L8 13/6/15) — build L44.5 CP1494; Shadow Claw + Foul Play / Drain Punch; 237,200 dust + 215 candy · 2nd charged move: 75,000 dust · needs XL candy
+- **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; already at optimal level · 2nd charged move: 10,000 dust
+- **Charjabug** (from Grubbin CP319 L13 2/12/11) — build L38.5 CP1494; Volt Switch + X Scissor / Discharge; evolve ×1 · power up L13 → L38.5 · 2nd charged move: 10,000 dust · Elite TM: Volt Switch
 
 Roles: lead **Charjabug** · safe swap **Sableye (Shadow)** · closer **Clefable**
 Unanswered meta threats (9): Diggersby, Clodsire, Stunfisk, Mimikyu, Steelix (Shadow), Jumpluff, Castform (Sunny), Gastrodon, …
@@ -37,9 +37,9 @@ Members whose optimal build is within 5 levels of their current level and below 
 
 Score parts (× weight): coverage 64.7 (0.35) · threat 86.7 (0.2) · weakness 100.0 (0.15) · roles 89.2 (0.2) · consistency 90.2 (0.1)
 
-- **Fearow** (from Fearow CP1202 L22 11/10/13) — build L27 CP1475; Peck + Drill Peck / Drill Run; 36 000 dust + 32 candy · 2nd charged move: 10 000 dust
-- **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; already at optimal level · 2nd charged move: 10 000 dust
-- **Stunfisk (Galarian)** (from Stunfisk CP1478 L24.5 13/13/12) — build L24.5 CP1478; Mud Shot + Rock Slide / Earthquake; already at optimal level · 2nd charged move: 75 000 dust
+- **Fearow** (from Fearow CP1202 L22 11/10/13) — build L27 CP1475; Peck + Drill Peck / Drill Run; 36,000 dust + 32 candy · 2nd charged move: 10,000 dust
+- **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; already at optimal level · 2nd charged move: 10,000 dust
+- **Stunfisk (Galarian)** (from Stunfisk CP1478 L24.5 13/13/12) — build L24.5 CP1478; Mud Shot + Rock Slide / Earthquake; already at optimal level · 2nd charged move: 75,000 dust
 
 Roles: lead **Stunfisk (Galarian)** · safe swap **Fearow** · closer **Clefable**
 Unanswered meta threats (10): Corviknight (Shadow), Corviknight, Pelipper, Sealeo (Shadow), Lapras (Shadow), Milotic, Oranguru, Dondozo, …
@@ -61,9 +61,9 @@ Current form at current level: no dust, no candy, no evolutions. Assumes the lis
 
 Score parts (× weight): coverage 64.1 (0.35) · threat 85.9 (0.2) · weakness 100.0 (0.15) · roles 86.3 (0.2) · consistency 88.9 (0.1)
 
-- **Altaria** (from Altaria CP1475 L26 14/15/14) — build L26 CP1475; Dragon Breath + Sky Attack / Flamethrower; used as-is, no power-ups · 2nd charged move assumed unlocked (10 000 dust if not)
-- **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; used as-is, no power-ups · 2nd charged move assumed unlocked (10 000 dust if not)
-- **Stunfisk (Galarian)** (from Stunfisk CP1478 L24.5 13/13/12) — build L24.5 CP1478; Mud Shot + Rock Slide / Earthquake; used as-is, no power-ups · 2nd charged move assumed unlocked (75 000 dust if not)
+- **Altaria** (from Altaria CP1475 L26 14/15/14) — build L26 CP1475; Dragon Breath + Sky Attack / Flamethrower; used as-is, no power-ups · 2nd charged move assumed unlocked (10,000 dust if not)
+- **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; used as-is, no power-ups · 2nd charged move assumed unlocked (10,000 dust if not)
+- **Stunfisk (Galarian)** (from Stunfisk CP1478 L24.5 13/13/12) — build L24.5 CP1478; Mud Shot + Rock Slide / Earthquake; used as-is, no power-ups · 2nd charged move assumed unlocked (75,000 dust if not)
 
 Roles: lead **Altaria** · safe swap **Stunfisk (Galarian)** · closer **Clefable**
 Unanswered meta threats (10): Feraligatr (Shadow), Jellicent, Pelipper, Lapras (Shadow), Sealeo (Shadow), Dusclops, Oranguru, Blastoise, …
@@ -77,7 +77,7 @@ Also strong in this tier:
 4. Ninetales + Greedent + Clefable — 78.9
 5. Altaria + Greedent + Clefable — 78.8
 
-## Recurring members (Milestone 4 appraisal shortlist)
+## Recurring members across the top optimal teams
 
 - Sableye (Shadow) — in 5 of the top 5 optimal teams
 - Clefable — in 5 of the top 5 optimal teams

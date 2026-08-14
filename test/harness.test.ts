@@ -166,3 +166,50 @@ describe("team builder links", () => {
     expect(url).toContain("-m-");
   });
 });
+
+describe("Ultra League cap (2500)", () => {
+  // The whole vendor bundle is re-evaluated at the UL cap: opponent default
+  // builds derive from battle.getCP(), so reproducing *published* UL ratings
+  // exactly proves the cap threads through both sides of every duel.
+  const UL_LEADS_PATH = join(
+    REPO_ROOT, "vendor", "pvpoke", "src", "data", "rankings", "all", "leads", "rankings-2500.json",
+  );
+  const ulLeads: LeadsEntry[] = JSON.parse(readFileSync(UL_LEADS_PATH, "utf8"));
+  const ulLeadsById = new Map(ulLeads.map((e) => [e.speciesId, e]));
+  const ulSim = new PvpokeSim(2500);
+
+  it("reproduces published UL leads matchup ratings exactly", () => {
+    let checked = 0;
+    for (const entry of ulLeads.slice(0, 10)) {
+      for (const m of entry.matchups.slice(0, 3)) {
+        const opp = ulLeadsById.get(m.opponent);
+        if (!opp) {
+          continue;
+        }
+        const a = ulSim.buildPokemon({ speciesId: entry.speciesId, moveset: entry.moveset });
+        const b = ulSim.buildPokemon({ speciesId: opp.speciesId, moveset: opp.moveset });
+        const r = ulSim.duel(a, b, { shields: [1, 1] });
+        expect(
+          `${entry.speciesId} vs ${m.opponent}: ${r.rating}`,
+        ).toBe(`${entry.speciesId} vs ${m.opponent}: ${m.rating}`);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThanOrEqual(20);
+  });
+
+  it("auto-levels default builds to the 2500 cap, not 1500", () => {
+    const entry = ulLeadsById.get("cresselia") ?? ulLeads[0]!;
+    const p = ulSim.buildPokemon({ speciesId: entry.speciesId, moveset: entry.moveset });
+    expect(p.cp).toBeLessThanOrEqual(2500);
+    expect(p.cp).toBeGreaterThan(1500);
+  });
+
+  it("team builder links target the 2500 cap", () => {
+    const entry = ulLeads[0]!;
+    const p = ulSim.buildPokemon({ speciesId: entry.speciesId, moveset: entry.moveset });
+    expect(ulSim.teamBuilderUrl([p])).toMatch(
+      /^https:\/\/pvpoke\.com\/team-builder\/all\/2500\//,
+    );
+  });
+});

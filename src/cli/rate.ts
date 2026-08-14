@@ -1,7 +1,8 @@
 import { parseArgs } from "node:util";
-import { loadGamemaster, loadRankings1500 } from "../data/pvpoke.js";
-import type { Gamemaster } from "../data/pvpoke.js";
-import { loadRoster } from "../roster.js";
+import { loadGamemaster, loadRankings } from "../data/pvpoke.js";
+import type { Gamemaster, League } from "../data/pvpoke.js";
+import { parseLeague } from "./common.js";
+import { defaultRosterPath, loadRoster } from "../roster.js";
 import { expandRoster } from "../resolve.js";
 import type { Candidate } from "../resolve.js";
 import { PvpokeSim } from "../sim/harness.js";
@@ -18,8 +19,8 @@ import type { MemberProfile } from "../score.js";
 import { renderTeamDetail } from "../report.js";
 
 // Rate a hand-picked team (or profile individual mons) from the roster. Unlike
-// `optimize`, this looks species up in the FULL GL rankings, so off-meta picks
-// (anything outside the top-100 viability pool) can still be evaluated —
+// `optimize`, this looks species up in the league's FULL rankings, so off-meta
+// picks (anything outside the top-100 viability pool) can still be evaluated —
 // that is the whole point: grading the team the user actually fields.
 
 const USAGE = `Usage: npm run rate -- [options] <species> [<species> ...]
@@ -31,7 +32,8 @@ names; case and punctuation are ignored ("stunfisk_galarian", "Stunfisk
 (Galarian)", "sandslash alolan" all work).
 
 Options:
-  --roster <path>   Poke Genie CSV (default data/poke_genie_export.csv)
+  --league <l>      great (default) or ultra — CP cap, rankings, and meta
+  --roster <path>   Poke Genie CSV (default: newest .csv in data/)
   --build <mode>    "ready" = as scanned, exact level (default);
                     "optimal" = best legal build for the IVs (evolutions allowed)
   --meta <n>        opponent pool size (default ${DEFAULT_MATRIX.metaN})
@@ -85,11 +87,12 @@ function memberCard(
   p: MemberProfile,
   meta: { ids: readonly string[]; weights: readonly number[] },
   gm: Gamemaster,
+  league: League,
 ): string {
   const o = v.candidate.owned;
   const lines: string[] = [];
   lines.push(
-    `## ${displayName(v.candidate.targetSpeciesId, gm)} — GL rank #${v.rank} ` +
+    `## ${displayName(v.candidate.targetSpeciesId, gm)} — ${league.short} rank #${v.rank} ` +
       `(score ${v.ranking.score})`,
   );
   const moves = v.ranking.moveset.map(prettyMove);
@@ -134,7 +137,8 @@ function main(): void {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      roster: { type: "string", default: "data/poke_genie_export.csv" },
+      league: { type: "string", default: "great" },
+      roster: { type: "string" },
       build: { type: "string", default: "ready" },
       meta: { type: "string", default: String(DEFAULT_MATRIX.metaN) },
       "pool-top": { type: "string" },
@@ -149,15 +153,22 @@ function main(): void {
     throw new Error(`--build must be "ready" or "optimal", got "${values.build}"`);
   }
   const buildMode = values.build;
+  const league = parseLeague(values.league);
   const metaN = positiveInt("meta", values.meta);
   const log = (line: string): void => {
     process.stderr.write(`${line}\n`);
   };
 
-  const roster = loadRoster(values.roster);
+  let rosterPath = values.roster;
+  if (rosterPath === undefined) {
+    const picked = defaultRosterPath();
+    rosterPath = picked.path;
+    log(picked.note);
+  }
+  const roster = loadRoster(rosterPath);
   const gm = loadGamemaster();
-  const rankings = loadRankings1500();
-  const sim = new PvpokeSim();
+  const rankings = loadRankings(league);
+  const sim = new PvpokeSim(league.cap);
   const allCandidates = expandRoster(roster, gm);
   const candidates =
     buildMode === "ready"
@@ -205,8 +216,9 @@ function main(): void {
       const over = selection.infeasible.find((c) => c.targetSpeciesId === id);
       throw new Error(
         over !== undefined
-          ? `${id}: no legal GL build — ${over.owned.name} CP${over.owned.cp} is over the cap.`
-          : `${id}: not in the GL rankings at all — cannot rate it.`,
+          ? `${id}: no legal ${league.short} build — ${over.owned.name} ` +
+            `CP${over.owned.cp} is over the ${league.cap} cap.`
+          : `${id}: not in the ${league.short} rankings at all — cannot rate it.`,
       );
     }
     return v;
@@ -218,7 +230,7 @@ function main(): void {
 
   const out: string[] = [];
   viableList.forEach((v, i) => {
-    out.push(memberCard(v, members[i]!, meta, gm));
+    out.push(memberCard(v, members[i]!, meta, gm, league));
     out.push("");
   });
 
@@ -231,7 +243,7 @@ function main(): void {
     const names = requestedIds.map((id) => displayName(id, gm));
     out.push(`# Team ${names.join(" + ")} — ${team.total.toFixed(1)}`);
     out.push("");
-    out.push(renderTeamDetail(team, viableList, buildMode, { gm, config, sim }));
+    out.push(renderTeamDetail(team, viableList, buildMode, { gm, config, sim, league }));
     out.push("");
 
     if (values["pool-top"] !== undefined) {

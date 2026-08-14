@@ -2,11 +2,13 @@
 node_modules/
 vendor/
 
-# Generated reports: the two tracked files below are kept for phone access.
+# Generated reports: the tracked files below are kept for phone access.
 # out/cache/ is derived (12.3k sims, ~2.2s to rebuild) and stays ignored.
 out/*
 !out/gl-search-strings.md
 !out/teams.md
+!out/teams-ultra.md
+!out/ul-search-strings.md
 
 # Roster CSVs ARE committed — this repo is private and they are the only
 # inputs no script can regenerate. See README.md ("Roster data").

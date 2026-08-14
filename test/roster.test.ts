@@ -2,11 +2,18 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { loadRoster, parseRosterCsv } from "../src/roster.js";
+import { defaultRosterPath, loadRoster, parseRosterCsv } from "../src/roster.js";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = join(REPO_ROOT, "fixtures", "roster-sample.csv");
-const REAL_CSV = join(REPO_ROOT, "data", "poke_genie_export.csv");
+// Same file the CLIs default to: the newest export in data/ (absent on CI).
+const REAL_CSV = ((): string => {
+  try {
+    return defaultRosterPath().path;
+  } catch {
+    return "";
+  }
+})();
 
 // The fixture is a verbatim 17-row excerpt of the real 2026-08-14 export,
 // chosen to cover shadows, regionals, "Normal" forms, lucky, genderless,
@@ -38,10 +45,22 @@ describe("parseRosterCsv on the fixture excerpt", () => {
       dustCost: 59532,
       candyCost: 130,
     });
+    expect(dwebble.ultraLeague).toMatchObject({
+      rankPct: 30.4,
+      targetName: "Crustle",
+      dustCost: 225300,
+      candyCost: 258,
+    });
   });
 
-  it("omits the league block for a mon over the 1500 cap", () => {
-    expect(byName("Melmetal", 3456)!.greatLeague).toBeUndefined();
+  it("omits each league block iff the mon is over that league's cap", () => {
+    const melmetal = byName("Melmetal", 3456)!; // over both caps
+    expect(melmetal.greatLeague).toBeUndefined();
+    expect(melmetal.ultraLeague).toBeUndefined();
+    const lapras = byName("Lapras", 1956)!; // over 1500, under 2500
+    expect(lapras.greatLeague).toBeUndefined();
+    expect(lapras.ultraLeague?.targetName).toBe("Lapras");
+    expect(lapras.ultraLeague?.dustCost).toBe(314000);
   });
 
   it("keeps Poke Genie's own-league target even when unranked (Vulpix)", () => {
@@ -121,11 +140,16 @@ describe("parseRosterCsv failure modes", () => {
 });
 
 describe.skipIf(!existsSync(REAL_CSV))("real export (data/, gitignored)", () => {
-  it("parses all 149 rows with the verified cap↔block equivalence", () => {
+  it("parses every row with the verified cap↔block equivalence in both leagues", () => {
     const real = loadRoster(REAL_CSV);
-    expect(real).toHaveLength(149);
+    expect(real.length).toBeGreaterThanOrEqual(149);
     for (const mon of real) {
-      expect(mon.greatLeague !== undefined).toBe(mon.cp <= 1500);
+      expect(mon.greatLeague !== undefined, `${mon.name} CP${mon.cp} (G)`).toBe(
+        mon.cp <= 1500,
+      );
+      expect(mon.ultraLeague !== undefined, `${mon.name} CP${mon.cp} (U)`).toBe(
+        mon.cp <= 2500,
+      );
     }
   });
 });

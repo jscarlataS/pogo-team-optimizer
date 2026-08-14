@@ -5,12 +5,19 @@ import { describe, expect, it } from "vitest";
 import { loadGamemaster } from "../src/data/pvpoke.js";
 import type { Gamemaster } from "../src/data/pvpoke.js";
 import { deriveBaseName } from "../src/species.js";
-import { loadRoster, parseRosterCsv } from "../src/roster.js";
-import type { OwnedPokemon } from "../src/roster.js";
+import { defaultRosterPath, loadRoster, parseRosterCsv } from "../src/roster.js";
+import type { LeagueAnalysis, OwnedPokemon } from "../src/roster.js";
 import { expandFamily, expandRoster, resolveSpeciesId } from "../src/resolve.js";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const REAL_CSV = join(REPO_ROOT, "data", "poke_genie_export.csv");
+// Same file the CLIs default to: the newest export in data/ (absent on CI).
+const REAL_CSV = ((): string => {
+  try {
+    return defaultRosterPath().path;
+  } catch {
+    return "";
+  }
+})();
 
 const gm = loadGamemaster();
 const fixtureRoster = parseRosterCsv(
@@ -34,16 +41,20 @@ const FORM_TO_REGION = new Map<string, string | null>([
   ["galar", "galarian"], ["hisui", "hisuian"], ["paldea", "paldean"],
 ]);
 
-// Poke Genie's own per-league target (Name (G)/Form (G)) acts as an
+// Poke Genie's own per-league target (Name (G|U)/Form (G|U)) acts as an
 // independently computed oracle for the family expansion: whatever it deemed
-// the Great League family member must be among our candidates, matched by
+// that league's family member must be among our candidates, matched by
 // base name + regional form. (Its shadow column is unverified — not asserted.)
-function expansionCoversPokeGenieTarget(mon: OwnedPokemon, g: Gamemaster): boolean {
-  if (!mon.greatLeague) {
+function expansionCoversPokeGenieTarget(
+  mon: OwnedPokemon,
+  g: Gamemaster,
+  block: LeagueAnalysis | undefined,
+): boolean {
+  if (!block) {
     return true;
   }
-  const wantName = mon.greatLeague.targetName;
-  const wantRegion = FORM_TO_REGION.get(mon.greatLeague.targetForm.toLowerCase());
+  const wantName = block.targetName;
+  const wantRegion = FORM_TO_REGION.get(block.targetForm.toLowerCase());
   return expandFamily(mon, g).some((c) => {
     const entry = g.pokemonById.get(c.targetSpeciesId)!;
     return (
@@ -132,20 +143,41 @@ describe("expandFamily", () => {
     expect(targets(fakeMon({ name: "Eevee", dex: 133 }))).toHaveLength(9);
   });
 
-  it("covers Poke Genie's own league target for every fixture row", () => {
+  it("covers Poke Genie's own GL and UL targets for every fixture row", () => {
     for (const mon of fixtureRoster) {
-      expect(expansionCoversPokeGenieTarget(mon, gm), `${mon.name}-${mon.cp}`).toBe(true);
+      expect(
+        expansionCoversPokeGenieTarget(mon, gm, mon.greatLeague),
+        `${mon.name}-${mon.cp} (G)`,
+      ).toBe(true);
+      expect(
+        expansionCoversPokeGenieTarget(mon, gm, mon.ultraLeague),
+        `${mon.name}-${mon.cp} (U)`,
+      ).toBe(true);
     }
   });
 });
 
 describe.skipIf(!existsSync(REAL_CSV))("real export resolution", () => {
-  it("resolves and expands all 149 rows, agreeing with Poke Genie's targets", () => {
+  it("resolves and expands every row, agreeing with Poke Genie's GL and UL targets", () => {
     const roster = loadRoster(REAL_CSV);
     const candidates = expandRoster(roster, gm); // throws on any unresolved row
     expect(candidates.length).toBeGreaterThan(roster.length);
+    let glChecked = 0;
+    let ulChecked = 0;
     for (const mon of roster) {
-      expect(expansionCoversPokeGenieTarget(mon, gm), `${mon.name}-${mon.cp}`).toBe(true);
+      expect(
+        expansionCoversPokeGenieTarget(mon, gm, mon.greatLeague),
+        `${mon.name}-${mon.cp} (G)`,
+      ).toBe(true);
+      expect(
+        expansionCoversPokeGenieTarget(mon, gm, mon.ultraLeague),
+        `${mon.name}-${mon.cp} (U)`,
+      ).toBe(true);
+      if (mon.greatLeague) glChecked++;
+      if (mon.ultraLeague) ulChecked++;
     }
+    // The oracle only bites where the blocks exist — make sure it actually did.
+    expect(glChecked).toBeGreaterThan(100);
+    expect(ulChecked).toBeGreaterThan(100);
   });
 });

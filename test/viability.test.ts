@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { loadGamemaster, loadRankings1500 } from "../src/data/pvpoke.js";
+import { LEAGUES, loadGamemaster, loadRankings } from "../src/data/pvpoke.js";
 import { parseRosterCsv } from "../src/roster.js";
 import { expandRoster } from "../src/resolve.js";
 import { PvpokeSim } from "../src/sim/harness.js";
@@ -18,7 +18,7 @@ const roster = parseRosterCsv(
   "fixture",
 );
 const gm = loadGamemaster();
-const rankings = loadRankings1500();
+const rankings = loadRankings(LEAGUES.great);
 const sim = new PvpokeSim();
 const result = selectViableCandidates(expandRoster(roster, gm), rankings, sim);
 const viableIds = result.viable.map((v) => v.candidate.targetSpeciesId);
