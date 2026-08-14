@@ -1,9 +1,16 @@
+# Reproducible on any machine via scripts/setup.sh — never commit these.
 node_modules/
 vendor/
-/data/
+
+# Generated reports: the two tracked files below are kept for phone access.
+# out/cache/ is derived (12.3k sims, ~2.2s to rebuild) and stays ignored.
 out/*
 !out/gl-search-strings.md
 !out/teams.md
+
+# Roster CSVs ARE committed — this repo is private and they are the only
+# inputs no script can regenerate. See README.md ("Roster data").
+
 .DS_Store
 .claude/settings.local.json
 *.log
