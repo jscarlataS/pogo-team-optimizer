@@ -146,9 +146,10 @@ showed this: ready specimen free at 78.4-team vs 44k Skwovet build at 80.0).
 ## Open threads
 
 - **Scoring tuning** — observations 1–4 in Next action; fold into M5.
-- **Poke Genie in-app move entry → export experiment** (open-questions.md):
-  if manual in-app moves populate the export's empty move columns, real
-  movesets become nearly free. Awaiting the user's 2-minute test.
+- Poke Genie in-app move entry — **declined by the user (2026-08-14)**: too
+  much hassle, and pinning scoring to current moves would narrow the search
+  since moves are TM-changeable. Ranked-set scoring + itemised TM costs is
+  deliberate permanent policy (closed in open-questions.md).
 - **Roster default path**: CLIs default to `data/poke_genie_export.csv` but
   the current export is `poke_genie_export_updated.csv`. Both are the user's
   files — don't delete; resolve at next /plan (flag default, config, or ask
@@ -187,6 +188,10 @@ showed this: ready specimen free at 78.4-team vs 44k Skwovet build at 80.0).
   rankings-2500/10000 verified present); M4 re-scoped away by user decision
   (no manual moveset pass; opportunistic corrections + the PG in-app-entry
   experiment recorded in open-questions.md); docs synced for a clean /plan.
+  Post-handoff addendum: the user then declined the PG in-app move-entry
+  experiment as well (hassle, and it would narrow the search vs TM-able
+  moves) — ranked-set scoring is deliberate permanent policy, not a
+  stopgap; question closed, docs updated, follow-up commit.
 - **2026-08-14 (e)** — User asked for resource-tiered suggestions. Added
   `exactLevel` builds to the harness, `selectReadyCandidates` (CP-equality
   assert vs the scan) + `filterBudgetCandidates` to viability, tier-structured

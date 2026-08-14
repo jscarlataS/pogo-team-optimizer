@@ -148,12 +148,14 @@ simulate every candidate with **PvPoke's ranked moveset** and treat the
 report as the TM shopping list — second-move unlock dust and Elite-TM needs
 are itemised per member.
 
-Follow-up decision (2026-08-14, M4 re-scope): the planned hand-recording
-pass is dropped; the ranked-moveset assumption is standing policy.
-User-stated real moves are applied ad hoc in analysis when they matter (they
-flipped one recommendation: Moonblast Altaria), and the possible Poke Genie
-in-app-entry → export ingestion path is tracked in
-`reference/open-questions.md`.
+Follow-up decision (2026-08-14, M4 re-scope, finalised same day): the
+planned hand-recording pass is dropped and the Poke Genie in-app-entry
+ingestion idea was declined too — recording current moves would anchor the
+search to today's TMs, when moves are themselves a changeable resource. The
+ranked-moveset assumption is deliberate, permanent policy: the report's
+TM/Elite-TM cost lines are the bridge between ranked sets and reality, and
+user-stated real moves are simmed ad hoc when a specific held moveset
+matters (precedent: Moonblast Altaria).
 
 ---
 

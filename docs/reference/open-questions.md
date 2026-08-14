@@ -69,17 +69,19 @@ Full verified shape in `data-sources.md`:
 
 New, discovered in the export:
 
-- [ ] **Moves are entirely absent from the export** — all three move columns
-      (`Quick Move`/`Charge Move`/`Charge Move 2`, columns 14–16) are present
-      but empty in all 158 rows. Poke Genie allows manual move entry per mon
-      in-app; whether that populates these columns on re-export is the open
-      question. *Minimal test (requires user):* set the known moves on one
-      scanned mon in Poke Genie, re-export, check that row's columns 14–16.
-      If they fill, shortlist movesets become a one-time in-app chore and the
-      parser can carry them through. Decision 2026-08-14: a dedicated manual
-      recording pass is declined regardless (M4 re-scope, see roadmap); until
-      this experiment succeeds, scoring assumes ranked movesets and the user
-      states real moves ad hoc when they matter.
+- [x] **Moves are entirely absent from the export** — CLOSED BY DECISION
+      2026-08-14 (the empirical question itself was never tested). All three
+      move columns (`Quick Move`/`Charge Move`/`Charge Move 2`, columns
+      14–16) are present but empty in all 158 rows. Whether Poke Genie's
+      in-app manual move entry would populate them on re-export is unknown —
+      the user declined the experiment: per-mon typing is a hassle, and
+      pinning scoring to current moves would *narrow* the search when moves
+      are TM-changeable anyway. **Standing policy:** score with PvPoke's
+      ranked movesets, itemise TM/Elite-TM costs in the report, and sim
+      user-stated real moves ad hoc when a specific held moveset matters
+      (precedent: Moonblast Altaria). Revive the minimal test (set moves on
+      one mon in-app → re-export → check columns 14–16) only if this policy
+      ever changes.
 - [ ] **`Sha/Pur (G/U/L)` semantics** (values 0/1/2/empty; 2 appears only on
       shadows). Not needed by the pipeline; low priority.
 - [ ] **Purified encoding in `Shadow/Purified`** — no purified specimen in the

@@ -105,12 +105,15 @@ What replaces it, already in practice:
   legacy moves changed cost advice; Altaria Moonblast-vs-Flamethrower was
   simulated both ways and changed the recommendation). Fold into a small
   tracked overrides file if these accumulate.
-- **A possible cheap ingestion path, unverified:** Poke Genie allows manual
-  move entry per mon in-app. If moves entered there flow into the export's
-  move columns, shortlist movesets become a one-time in-app chore and the
-  pipeline reads them forever after. Minimal test in
-  `reference/open-questions.md`; if it works, carrying the columns through
-  the parser is small work.
+- **Poke Genie in-app move entry — considered and declined (2026-08-14).**
+  In-app entry could, if it flows into the export's move columns, make
+  ingestion automatic — but it is still per-mon typing, and the user judged
+  it not worth it: recording current moves would also *narrow* the search,
+  since moves are TM-changeable anyway. Ranked-moveset scoring with
+  itemised TM/Elite-TM costs is the deliberate model, not a stopgap.
+  (Whether in-app entry populates the export was never tested; the minimal
+  test is preserved in `reference/open-questions.md` in case this is ever
+  revived.)
 
 ---
 
