@@ -1,6 +1,7 @@
 node_modules/
 vendor/
-out/
+out/*
+!out/gl-search-strings.md
 .DS_Store
 .claude/settings.local.json
 *.log

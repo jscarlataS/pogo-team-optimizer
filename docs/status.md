@@ -22,7 +22,8 @@ failing loudly on drift), collapses the top 100 entries to **73 base species by
 dex number** (rank order preserved), and emits chunked comma-separated search
 strings (names + dex variants, default 200-char budget) as markdown with the
 manual test checklist embedded. Output at `out/gl-search-strings.md`
-(regenerable, untracked). 21 tests pass, including drift detection pinned to the
+(regenerable; committed so the chunks are copyable from a phone via GitHub).
+21 tests pass, including drift detection pinned to the
 vendored commit (1,143 ranking entries; top 100 → 73).
 
 No Poke Genie CSV exists yet — Scan Pro not purchased, no scanning done. This is
