@@ -43,6 +43,11 @@ export interface BuildSpec {
    * optimal level is below this floor is unobtainable → buildPokemon → null.
    */
   levelFloor?: number;
+  /**
+   * Build at exactly this level instead of auto-levelling to the cap — the
+   * "use it as it stands" mode for zero-investment teams. Requires `ivs`.
+   */
+  exactLevel?: number;
 }
 
 export interface ShieldScenario {
@@ -154,7 +159,15 @@ export class PvpokeSim {
     if (!p || typeof p.speciesId !== "string") {
       throw new Error(`PvPoke does not know speciesId "${spec.speciesId}".`);
     }
-    if (spec.ivs) {
+    if (spec.exactLevel !== undefined) {
+      if (!spec.ivs) {
+        throw new Error(`exactLevel build for ${spec.speciesId} requires ivs.`);
+      }
+      p.setIV("atk", spec.ivs.atk);
+      p.setIV("def", spec.ivs.def);
+      p.setIV("hp", spec.ivs.hp);
+      p.setLevel(spec.exactLevel, true);
+    } else if (spec.ivs) {
       p.autoLevel = true; // each setIV re-derives the max level under the cap
       p.setIV("atk", spec.ivs.atk);
       p.setIV("def", spec.ivs.def);

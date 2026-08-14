@@ -89,3 +89,94 @@ export function selectViableCandidates(
   const viable = [...bestByTarget.values()].sort((a, b) => a.rank - b.rank);
   return { viable, infeasible, outclassed };
 }
+
+/**
+ * The "little power-ups" subset of an optimal viable list: builds whose
+ * optimal level is within `maxLevelUp` of the mon's current level, and which
+ * stay out of XL-candy territory (level ≤ 40 — XL is its own scarce resource,
+ * not "little"). Same builds and matrix rows as the optimal tier; only the
+ * team search pool shrinks.
+ */
+export function filterBudgetCandidates(
+  viable: readonly ViableCandidate[],
+  maxLevelUp: number,
+): ViableCandidate[] {
+  return viable.filter(
+    (v) =>
+      v.build.level - v.candidate.owned.level <= maxLevelUp &&
+      v.build.level <= 40,
+  );
+}
+
+/**
+ * The "ready now" tier: each mon exactly as scanned — current form (no
+ * evolution), current level (no power-ups). Eligible iff that form is in the
+ * meta top-N and its current CP fits under the cap; `infeasible` collects
+ * meta-relevant forms already sitting above the cap. The simulated build's CP
+ * must reproduce the scanned CP exactly, which cross-checks species
+ * resolution and the vendored base stats against the game's own numbers.
+ */
+export function selectReadyCandidates(
+  candidates: readonly Candidate[],
+  rankings: readonly RankingEntry[],
+  sim: PvpokeSim,
+  config: ViabilityConfig = DEFAULT_VIABILITY,
+): ViabilityResult {
+  const rankById = new Map<string, { entry: RankingEntry; rank: number }>();
+  rankings.slice(0, config.topN).forEach((entry, i) => {
+    rankById.set(entry.speciesId, { entry, rank: i + 1 });
+  });
+
+  const bestByTarget = new Map<string, ViableCandidate>();
+  const infeasible: Candidate[] = [];
+  const outclassed: ViableCandidate[] = [];
+  for (const candidate of candidates) {
+    if (candidate.evolutionSteps !== 0) {
+      continue; // evolving costs candy — not "as it stands"
+    }
+    const ranked = rankById.get(candidate.targetSpeciesId);
+    if (ranked === undefined) {
+      continue;
+    }
+    if (candidate.owned.cp > 1500) {
+      infeasible.push(candidate);
+      continue;
+    }
+    const build = sim.buildPokemon({
+      speciesId: candidate.targetSpeciesId,
+      moveset: ranked.entry.moveset,
+      ivs: candidate.owned.ivs,
+      exactLevel: candidate.owned.level,
+    });
+    if (build.cp !== candidate.owned.cp) {
+      throw new Error(
+        `Rebuilding ${candidate.targetSpeciesId} at L${candidate.owned.level} ` +
+          `with IVs ${candidate.owned.ivs.atk}/${candidate.owned.ivs.def}/` +
+          `${candidate.owned.ivs.hp} gives CP ${build.cp}, but Poke Genie ` +
+          `scanned CP ${candidate.owned.cp} (${candidate.owned.name}). Either ` +
+          `species resolution picked the wrong form, the vendored base stats ` +
+          `have drifted, or the mon is CP-boosted in-game (best buddy?). ` +
+          `Refusing to continue on inconsistent data.`,
+      );
+    }
+    const viable: ViableCandidate = {
+      candidate,
+      ranking: ranked.entry,
+      rank: ranked.rank,
+      build,
+      statProduct: build.stats.atk * build.stats.def * build.stats.hp,
+    };
+    const incumbent = bestByTarget.get(candidate.targetSpeciesId);
+    if (incumbent === undefined) {
+      bestByTarget.set(candidate.targetSpeciesId, viable);
+    } else if (viable.statProduct > incumbent.statProduct) {
+      outclassed.push(incumbent);
+      bestByTarget.set(candidate.targetSpeciesId, viable);
+    } else {
+      outclassed.push(viable);
+    }
+  }
+
+  const viable = [...bestByTarget.values()].sort((a, b) => a.rank - b.rank);
+  return { viable, infeasible, outclassed };
+}

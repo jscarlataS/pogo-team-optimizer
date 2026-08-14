@@ -50,8 +50,20 @@ Pipeline (all stages, 66 tests green):
 - `src/report.ts` + CLIs — `npm run candidates` (stage-3 eyeball checkpoint),
   `npm run optimize` (full run → `out/teams.md`, tracked for phone access).
 
-Real-run result: top-10 teams dominated by **Shadow Sableye (10/10) +
-Clefable (9/10)** + a rotating third; scores ~81.4–81.8.
+Real-run result: top teams dominated by **Shadow Sableye + Clefable** + a
+rotating third; scores ~81.4–81.8.
+
+**Resource tiers (added on user request after the first report):** the CLI now
+reports three tiers — *optimal* (no constraints), *budget* (each member ≤
+`--max-levelup` levels of power-up, default 5, no XL; same matrix, filtered
+pool), and *ready now* (current form at current level, zero investment; own
+builds via the harness's `exactLevel` mode + own cached matrix). Ready-now
+builds must reproduce the scanned CP exactly — a live cross-check of species
+resolution and vendored base stats against the game, passing for all 149 rows.
+Real run: pools 41/14/25; headline teams **Sableye(S)+Clefable+Charjabug 81.8**
+(optimal), **Clefable+Seaking+Hydreigon 79.8** (budget — the L15 Deino evolves
+into a legal 1459 CP GL Hydreigon with zero power-ups), **Ninetales+Blastoise+
+Clefable 79.4** (ready now, all three already 1450+).
 
 Cross-validation in the browser (PvPoke Team Builder, teams #1 and #6): the
 generated share links load the exact custom builds (IVs, levels, movesets);
@@ -99,6 +111,11 @@ then Milestone 4.
 
 ## Session log
 
+- **2026-08-14 (e)** — User asked for resource-tiered suggestions. Added
+  `exactLevel` builds to the harness, `selectReadyCandidates` (CP-equality
+  assert vs the scan) + `filterBudgetCandidates` to viability, tier-structured
+  report, and CLI flags (`--max-levelup`, per-tier `--teams`). 73 tests.
+  Verdict on the tiered teams still pending.
 - **2026-08-14 (d)** — /plan confirmed the M2+M3 merge; implemented the whole
   merged milestone in one session. Verified the real CSV (three surprises: no
   moves, exact IVs, per-league analysis blocks) and recorded it; rewrote

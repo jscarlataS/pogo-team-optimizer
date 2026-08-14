@@ -100,6 +100,32 @@ describe("real-IV builds under the 1500 cap", () => {
   });
 });
 
+describe("exact-level builds (ready-now tier)", () => {
+  it("reproduces the game's scanned CP exactly at the scanned level", () => {
+    // (species, level, IVs, CP) straight from fixture rows of the real
+    // export — the game itself computed these CPs, so equality proves the
+    // vendored base stats + CPM table + our drive agree with the game.
+    const cases: Array<[string, number, { atk: number; def: number; hp: number }, number]> = [
+      ["azumarill", 15, { atk: 14, def: 15, hp: 14 }, 673],
+      ["stunfisk_galarian", 24.5, { atk: 13, def: 13, hp: 12 }, 1478],
+      ["sableye_shadow", 8, { atk: 13, def: 6, hp: 15 }, 318],
+      ["registeel", 20, { atk: 12, def: 14, hp: 10 }, 1352],
+    ];
+    for (const [speciesId, level, ivs, cp] of cases) {
+      const entry = leadsById.get(speciesId)!;
+      const p = sim.buildPokemon({ speciesId, moveset: entry.moveset, ivs, exactLevel: level });
+      expect(p.cp, speciesId).toBe(cp);
+      expect(p.level, speciesId).toBe(level);
+    }
+  });
+
+  it("requires ivs alongside exactLevel", () => {
+    expect(() =>
+      sim.buildPokemon({ speciesId: "azumarill", moveset: ["BUBBLE", "ICE_BEAM"], exactLevel: 15 }),
+    ).toThrow(/requires ivs/);
+  });
+});
+
 describe("throughput", () => {
   it("measures per-sim cost (records the last open Milestone 0 question)", () => {
     const pool = leads.slice(0, 12).map((e) =>

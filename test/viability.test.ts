@@ -6,7 +6,11 @@ import { loadGamemaster, loadRankings1500 } from "../src/data/pvpoke.js";
 import { parseRosterCsv } from "../src/roster.js";
 import { expandRoster } from "../src/resolve.js";
 import { PvpokeSim } from "../src/sim/harness.js";
-import { selectViableCandidates } from "../src/viability.js";
+import {
+  filterBudgetCandidates,
+  selectReadyCandidates,
+  selectViableCandidates,
+} from "../src/viability.js";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const roster = parseRosterCsv(
@@ -87,5 +91,65 @@ describe("selectViableCandidates on the fixture roster", () => {
   it("keeps rank order", () => {
     const ranks = result.viable.map((v) => v.rank);
     expect([...ranks].sort((a, b) => a - b)).toEqual(ranks);
+  });
+});
+
+describe("selectReadyCandidates (zero-investment tier) on the fixture roster", () => {
+  const ready = selectReadyCandidates(expandRoster(roster, gm), rankings, sim);
+  const readyIds = ready.viable.map((v) => v.candidate.targetSpeciesId);
+
+  it("keeps only current-form, under-cap, meta-relevant mons", () => {
+    for (const id of [
+      "altaria",
+      "azumarill",
+      "dusknoir",
+      "medicham",
+      "registeel",
+      "sableye_shadow",
+      "stunfisk_galarian",
+    ]) {
+      expect(readyIds, id).toContain(id);
+    }
+    // Evolution targets are not "existing" mons…
+    for (const id of ["ninetales", "ninetales_shadow", "clodsire", "toxapex"]) {
+      expect(readyIds, id).not.toContain(id);
+    }
+    // …and over-cap mons cannot enter the league at all.
+    expect(readyIds).not.toContain("melmetal");
+    expect(readyIds).not.toContain("lapras");
+  });
+
+  it("builds at the scanned level and reproduces the scanned CP", () => {
+    for (const v of ready.viable) {
+      expect(v.build.level, v.candidate.targetSpeciesId).toBe(v.candidate.owned.level);
+      expect(v.build.cp, v.candidate.targetSpeciesId).toBe(v.candidate.owned.cp);
+    }
+  });
+
+  it("collects over-cap meta forms as infeasible", () => {
+    const ids = ready.infeasible.map((c) => c.targetSpeciesId);
+    expect(ids).toContain("melmetal");
+    expect(ids).toContain("lapras");
+  });
+});
+
+describe("filterBudgetCandidates (little-power-ups tier)", () => {
+  const budget = filterBudgetCandidates(result.viable, 5);
+  const budgetIds = budget.map((v) => v.candidate.targetSpeciesId);
+
+  it("keeps near-ready builds and drops big projects", () => {
+    expect(budgetIds).toContain("stunfisk_galarian"); // Δ0 levels
+    expect(budgetIds).toContain("registeel"); // Δ2
+    expect(budgetIds).toContain("altaria"); // already near its optimal level
+    expect(budgetIds).not.toContain("sableye_shadow"); // Δ36.5, deep XL
+    expect(budgetIds).not.toContain("azumarill"); // Δ~21.5
+    expect(budgetIds).not.toContain("medicham"); // Δ~30, XL
+  });
+
+  it("enforces both the level delta and the XL bound", () => {
+    for (const v of budget) {
+      expect(v.build.level - v.candidate.owned.level).toBeLessThanOrEqual(5);
+      expect(v.build.level).toBeLessThanOrEqual(40);
+    }
   });
 });
