@@ -7,7 +7,12 @@ import type { Gamemaster } from "../src/data/pvpoke.js";
 import { deriveBaseName } from "../src/species.js";
 import { defaultRosterPath, loadRoster, parseRosterCsv } from "../src/roster.js";
 import type { LeagueAnalysis, OwnedPokemon } from "../src/roster.js";
-import { expandFamily, expandRoster, resolveSpeciesId } from "../src/resolve.js";
+import {
+  expandFamily,
+  expandRoster,
+  KNOWN_DANGLING_EVOLUTIONS,
+  resolveSpeciesId,
+} from "../src/resolve.js";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // Same file the CLIs default to: the newest export in data/ (absent on CI).
@@ -55,13 +60,29 @@ function expansionCoversPokeGenieTarget(
   }
   const wantName = block.targetName;
   const wantRegion = FORM_TO_REGION.get(block.targetForm.toLowerCase());
-  return expandFamily(mon, g).some((c) => {
-    const entry = g.pokemonById.get(c.targetSpeciesId)!;
+  const wanted = (speciesId: string): boolean => {
+    const entry = g.pokemonById.get(speciesId);
     return (
+      entry !== undefined &&
       deriveBaseName(entry.speciesName) === wantName &&
-      regionOfId(c.targetSpeciesId) === (wantRegion ?? null)
+      regionOfId(speciesId) === (wantRegion ?? null)
     );
-  });
+  };
+  const candidates = expandFamily(mon, g);
+  if (candidates.some((c) => wanted(c.targetSpeciesId))) {
+    return true;
+  }
+  // PG may name a target reachable only through a vendor-dangling evolution id
+  // (a shadow Scyther's "Kleavor": kleavor_shadow has no gamemaster entry, so
+  // expansion rightly skips it). Accept when stripping _shadow off a dangling
+  // id named by a candidate's family lands on the wanted species.
+  return candidates.some((c) =>
+    (g.pokemonById.get(c.targetSpeciesId)!.family?.evolutions ?? []).some(
+      (evoId) =>
+        KNOWN_DANGLING_EVOLUTIONS.has(evoId) &&
+        wanted(evoId.replace(/_shadow$/, "")),
+    ),
+  );
 }
 
 describe("resolveSpeciesId", () => {
@@ -96,6 +117,19 @@ describe("resolveSpeciesId", () => {
     expect(() =>
       resolveSpeciesId(fakeMon({ name: "Castform", dex: 351 }), gm),
     ).toThrow(/RESOLVE_OVERRIDES/);
+  });
+
+  it("resolves observed non-regional formes via RESOLVE_OVERRIDES", () => {
+    // Form values from the 2026-08-14 UL scanning pass.
+    expect(resolveSpeciesId(fakeMon({ name: "Giratina", dex: 487, form: "Origin" }), gm)).toBe(
+      "giratina_origin",
+    );
+    expect(resolveSpeciesId(fakeMon({ name: "Giratina", dex: 487, form: "Altered" }), gm)).toBe(
+      "giratina_altered",
+    );
+    expect(resolveSpeciesId(fakeMon({ name: "Zygarde", dex: 718, form: "10%" }), gm)).toBe(
+      "zygarde_10",
+    );
   });
 });
 
@@ -141,6 +175,20 @@ describe("expandFamily", () => {
 
   it("expands branching families (Eevee → 8 evolutions)", () => {
     expect(targets(fakeMon({ name: "Eevee", dex: 133 }))).toHaveLength(9);
+  });
+
+  it("skips known-dangling vendor evolution ids, keeps the rest of the family", () => {
+    // scyther.family names kleavor (exists); scyther_shadow.family names
+    // kleavor_shadow (no gamemaster entry — verified vendor gap).
+    expect(targets(fakeMon({ name: "Scyther", dex: 123 }))).toEqual([
+      "scyther",
+      "scizor",
+      "kleavor",
+    ]);
+    expect(targets(fakeMon({ name: "Scyther", dex: 123, shadow: true }))).toEqual([
+      "scyther_shadow",
+      "scizor_shadow",
+    ]);
   });
 
   it("covers Poke Genie's own GL and UL targets for every fixture row", () => {

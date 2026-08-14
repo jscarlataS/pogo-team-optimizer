@@ -1,19 +1,19 @@
 # Status
 
-**Last updated:** 2026-08-14 (session g)
-**Current milestone:** 5 — **Ultra League chunk SHIPPED**, awaiting the user's
-in-game verdict and the UL scanning pass. League is a first-class value
-through the whole stack (`--league great|ultra` on all four CLIs); UL
-validated the same way GL was (exact published-rating reproduction + the
-export's `(U)` oracle on every row). Headline UL teams: optimal
-**Feraligatr(S)+Clefable+Melmetal 82.0**, ready-now
-**Swampert+Clefable+Melmetal 78.5** (budget tier honestly skipped: only 2
-members are reachable without XL — UL optima live at L40+).
-Roster default resolved (user decision): CLIs pick the **newest .csv in
-`data/`** and log the pick loudly; `--roster` overrides.
-**This session also bootstrapped a new machine** (WSL2; repo moved from
-macOS): Node 24 LTS installed user-locally, `scripts/setup.sh` ran clean,
-all tests green before any code was touched.
+**Last updated:** 2026-08-14 (session h)
+**Current milestone:** 5 — **Ultra League complete on the full roster**,
+awaiting the user's field verdict. The UL scanning pass is done
+(`data/poke_genie_export_updated_with_ul.csv`, 245 scans, +87); UL pool
+27 → 52 viable. Headline UL teams: optimal
+**Feraligatr(S)+Annihilape+Clefable 82.2**; budget
+**Moltres(G)+Swampert+Melmetal 81.2** (21k dust total, only 3 unanswered
+threats); ready-now **Swampert+Togekiss+Melmetal 81.0** — three CP≈2490
+mons as-is, TMs only. Giratina (Altered) CP2493 is UL #32 at its optimal
+level as scanned. GL regenerated on the grown roster: optimal/ready
+headliners unchanged, budget #1 now Corviknight+Clefable+Hydreigon 80.7.
+League is a first-class value through the whole stack; UL validated like GL
+(exact published-rating reproduction + the `(U)` oracle on all rows).
+CLIs default to the newest .csv in `data/` (loudly logged).
 
 ---
 
@@ -96,16 +96,15 @@ B/B/B/A (team 6) and B/D/B/A (team 1).
 
 ## Next action
 
-1. **User: UL scanning pass** using `out/ul-search-strings.md` — the
-   "new species only" section lists the 54 of 70 UL-meta species with no scan
-   yet (Giratina, Cresselia, Corviknight, Tinkaton, …). Scans are additive —
-   never wipe Poke Genie. Then re-export, drop in `data/`, rerun
-   `npm run optimize -- --league ultra --out out/teams-ultra.md`.
-2. **User: browser cross-check + field verdict** on the UL teams (Team
+1. **User: browser cross-check + field verdict** on the UL teams (Team
    Builder links in `out/teams-ultra.md` carry the 2500 cap); record the
-   verdict here, as with the GL ⭐ checkpoint.
-3. **Next /plan chunk:** either Master League (mostly plumbing; needs its own
-   ready/budget/XL semantics) or the scoring-tuning items below — user's call.
+   verdict here, as with the GL ⭐ checkpoint. The obvious first team to
+   field: ready-now Swampert+Togekiss+Melmetal 81.0 (TM costs only).
+2. **Next /plan chunk:** either Master League (mostly plumbing; needs its own
+   ready/budget/XL semantics) or the scoring-tuning items below — user's
+   call. 41 of 70 UL-meta species remain unscanned per
+   `out/ul-search-strings.md` — presumably unowned; nothing to do unless the
+   user catches one.
 
 The ⭐ checkpoint is closed (verdict above). The user's stated dust plan:
 play Altaria+Clefable+G-Fisk now; build **Shadow Ninetales** (Vulpix L8
@@ -179,6 +178,27 @@ showed this: ready specimen free at 78.4-team vs 44k Skwovet build at 80.0).
 
 ## Session log
 
+- **2026-08-14 (h)** — **UL rerun on the completed roster.** User scanned the
+  UL pass and re-exported (245 scans, +87). The loud-failure design earned
+  its keep: four new-data surprises, all resolved by observation first —
+  (1) gamemaster ships four dangling `family.evolutions` ids (three unshipped
+  shadow evolutions + the `lycranroc_dusk` typo; whole-file scan recorded in
+  data-sources.md) — expansion now skips exactly those
+  (`KNOWN_DANGLING_EVOLUTIONS`), anything else still throws; (2–3) new Poke
+  Genie Form values `Origin`/`Altered` (both Giratina formes scanned) and
+  `10%` (Zygarde) — first real entries in `RESOLVE_OVERRIDES`; the oracle
+  test gained a dangling-aware fallback (shadow Scyther's PG target is
+  Kleavor, reachable only via the missing `kleavor_shadow`). 83 tests green.
+  Results: UL pool 27 → 52; optimal **Feraligatr(S)+Annihilape+Clefable
+  82.2** (Rage Fist Annihilape from Primeape); budget no longer skipped —
+  **Moltres(G)+Swampert+Melmetal 81.2** for 21k dust with only 3 unanswered
+  threats; ready-now jumped 78.5 → **Swampert+Togekiss+Melmetal 81.0** (all
+  three ~CP2490 as scanned). Giratina(A) CP2493 lands at UL #32 already at
+  its optimal level (ready #2 at 80.7); Zygarde 10% correctly invisible
+  (rank 634). GL regenerated: pools 43/15/26, budget #1 now
+  Corviknight+Clefable+Hydreigon 80.7, optimal/ready unchanged.
+  ul-search-strings regenerated: 41 of 70 UL species remain unscanned
+  (presumably unowned). Awaiting UL field verdict.
 - **2026-08-14 (g)** — **New machine + Milestone 5 chunk 1 (Ultra League).**
   Repo found freshly moved to WSL2 with no Node/vendor/node_modules; installed
   Node 24.19 LTS user-locally (`~/.local/node`, symlinks in `~/.local/bin`),

@@ -1,6 +1,6 @@
 # Great League teams from your roster
 
-- Pipeline: 158 scanned mons → 269 family-expanded candidates → pools: 41 optimal, 14 budget, 25 ready
+- Pipeline: 245 scanned mons → 430 family-expanded candidates → pools: 43 optimal, 15 budget, 26 ready
 - Meta: top 100 GL ranking entries, score-weighted; shield scenarios 0v0/1v1/2v2 weighted 0.3/0.5/0.2
 - Movesets are PvPoke's ranked sets (the export carries none) — listed moves are the TM targets
 - Gamemaster 2026-08-13 20:39:22; ratings >500 are wins
@@ -33,25 +33,25 @@ Also strong in this tier:
 
 Members whose optimal build is within 5 levels of their current level and below the XL range. Evolutions and second-move unlocks allowed; per-member costs shown.
 
-### Fearow + Clefable + Stunfisk (Galarian) — 80.7
+### Corviknight + Clefable + Hydreigon — 80.7
 
-Score parts (× weight): coverage 64.7 (0.35) · threat 86.7 (0.2) · weakness 100.0 (0.15) · roles 89.2 (0.2) · consistency 90.2 (0.1)
+Score parts (× weight): coverage 64.6 (0.35) · threat 88.8 (0.2) · weakness 100.0 (0.15) · roles 88.7 (0.2) · consistency 87.7 (0.1)
 
-- **Fearow** (from Fearow CP1202 L22 11/10/13) — build L27 CP1475; Peck + Drill Peck / Drill Run; 36,000 dust + 32 candy · 2nd charged move: 10,000 dust
+- **Corviknight** (from Rookidee CP374 L23 3/14/8) — build L23 CP1479; Sand Attack + Air Cutter / Payback; evolve ×2 · 0 dust + 125 candy · 2nd charged move: 10,000 dust · Elite TM: Air Cutter
 - **Clefable** (from Clefable CP1492 L22 13/11/13) — build L22 CP1492; Fairy Wind + Moonblast / Meteor Mash; already at optimal level · 2nd charged move: 10,000 dust
-- **Stunfisk (Galarian)** (from Stunfisk CP1478 L24.5 13/13/12) — build L24.5 CP1478; Mud Shot + Rock Slide / Earthquake; already at optimal level · 2nd charged move: 75,000 dust
+- **Hydreigon** (from Deino CP400 L15 3/9/14) — build L15 CP1459; Dragon Breath + Brutal Swing / Fly; evolve ×2 · 2nd charged move: 75,000 dust · Elite TM: Brutal Swing
 
-Roles: lead **Stunfisk (Galarian)** · safe swap **Fearow** · closer **Clefable**
-Unanswered meta threats (10): Corviknight (Shadow), Corviknight, Pelipper, Sealeo (Shadow), Lapras (Shadow), Milotic, Oranguru, Dondozo, …
+Roles: lead **Hydreigon** · safe swap **Corviknight** · closer **Clefable**
+Unanswered meta threats (8): Sealeo (Shadow), Corviknight, Cradily, Charjabug, Sealeo, Talonflame, Forretress (Shadow), Stunfisk (Galarian)
 
-In-game search: `Fearow,Clefable,Stunfisk`
-[PvPoke Team Builder](https://pvpoke.com/team-builder/all/1500/fearow-27-11-10-13-4-4-1-1-m-0-2-3%2Cclefable-22-13-11-13-4-4-1-1-m-2-4-3%2Cstunfisk_galarian-24.5-13-13-12-4-4-1-1-m-1-4-1)
+In-game search: `Rookidee,Clefable,Deino`
+[PvPoke Team Builder](https://pvpoke.com/team-builder/all/1500/corviknight-23-3-14-8-4-4-1-1-m-1-1-3%2Cclefable-22-13-11-13-4-4-1-1-m-2-4-3%2Chydreigon-15-3-9-14-4-4-1-1-m-1-1-5)
 
 Also strong in this tier:
-2. Fearow + Clefable + Malamar — 80.5
-3. Clefable + Mandibuzz + Stunfisk (Galarian) — 80.5
-4. Fearow + Wigglytuff + Registeel — 80.5
-5. Fearow + Clefable + Registeel — 80.3
+2. Fearow + Clefable + Stunfisk (Galarian) — 80.7
+3. Fearow + Clefable + Malamar — 80.7
+4. Clefable + Mandibuzz + Stunfisk (Galarian) — 80.5
+5. Fearow + Wigglytuff + Registeel — 80.5
 
 ## Ready now — existing Pokémon, zero power-ups
 
@@ -84,26 +84,27 @@ Also strong in this tier:
 
 ## Meta-relevant but unbuildable (already over 1500)
 
-- Crustle from Crustle CP1509 L24
 - Hydreigon from Deino CP497 L17.5
-- Hydreigon from Deino CP582 L20
 - Hydreigon from Deino CP590 L20
-- Dusknoir from Dusclops CP1261 L29
-- Milotic from Milotic CP1706 L20
-- Melmetal from Melmetal CP2489 L26
-- Swampert from Swampert CP2495 L29.5
 - Melmetal from Melmetal CP3456 L37.5
-- Talonflame from Fletchling CP588 L27
-- Blastoise from Squirtle CP675 L29
-- Talonflame from Fletchling CP689 L31
+- Guzzlord from Guzzlord CP1607 L20
+- Swampert from Swampert CP2495 L29.5
+- Milotic from Milotic CP1706 L20
+- Kingdra from Seadra CP1483 L25
+- Lapras from Lapras CP1844 L25.5
 - Blastoise from Blastoise CP1522 L22
+- Blastoise from Blastoise CP1735 L25
+- Empoleon from Prinplup CP954 L20
+- Moltres (Galarian) from Moltres CP2241 L25.5
+- Dusknoir from Dusclops CP1261 L29
+- Lapras from Lapras CP1956 L30
+- Blastoise from Squirtle CP675 L29
+- Talonflame from Fletchling CP588 L27
+- Talonflame from Fletchling CP689 L31
+- Crustle from Crustle CP1509 L24
+- Hydreigon from Deino CP582 L20
+- Melmetal from Melmetal CP2489 L26
 - Wigglytuff from Wigglytuff CP1523 L28
 - Dewgong from Dewgong CP1731 L31.5
-- Blastoise from Blastoise CP1735 L25
 - Clefable from Clefable CP1876 L29
 - Ninetales from Vulpix CP639 L26
-- Empoleon from Prinplup CP954 L20
-- Kingdra from Seadra CP1483 L25
-- Guzzlord from Guzzlord CP1607 L20
-- Lapras from Lapras CP1844 L25.5
-- Lapras from Lapras CP1956 L30

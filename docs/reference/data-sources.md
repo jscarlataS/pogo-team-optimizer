@@ -163,6 +163,15 @@ key, `opRating` (the opponent's raw rating from the same sim), alongside
 have it too; the original doc example happened to be drawn from one that
 doesn't. Loaders stay narrow and ignore it.
 
+**gamemaster family-graph gap (verified 2026-08-14, whole-file scan):**
+exactly four `family.evolutions` ids have **no `pokemon[]` entry** at the
+pinned commit — `kleavor_shadow` (named by `scyther_shadow`),
+`farigiraf_shadow` (`girafarig_shadow`), `wyrdeer_shadow`
+(`stantler_shadow`), and `lycranroc_dusk` (a typo, named by `rockruff`; the
+real Lycanroc entries are spelled `lycanroc_*`). Family expansion skips
+exactly these (`KNOWN_DANGLING_EVOLUTIONS` in `src/resolve.ts`); any other
+missing id still fails loudly as vendor-drift detection.
+
 ### gamemaster.json — verified shape
 
 Top-level keys: `id`, `title`, `timestamp`, `settings`, `cups`, `formats`, `moves`,
@@ -389,7 +398,11 @@ Observed facts — whole-file checks over all 149 rows, not row sampling:
   planning): the 7 rows with CP > 2500 are precisely the 7 rows with an empty
   U-block. So `Name (U)`/`Form (U)` give the same free family-expansion oracle
   for Ultra that `(G)` gave for Great, on 151 of 158 rows.
-- Enums observed: `Form` ∈ {empty, `Normal`, `Alola`, `Galar`, `Paldea`} — empty
+- Enums observed: `Form` ∈ {empty, `Normal`, `Alola`, `Galar`, `Paldea`,
+  `Origin`, `Altered`, `10%`} — the last three observed 2026-08-14 (UL
+  scanning pass: Giratina formes, Zygarde 10%); they are non-regional formes,
+  handled by `RESOLVE_OVERRIDES` in `src/resolve.ts`, not `FORM_TO_REGION`.
+  Empty
   and `Normal` both mean base form. `Gender` ∈ {♀, ♂, empty}. `Lucky`,
   `Favorite`, `Shadow/Purified` are 0/1 flags — **no purified Pokémon exists in
   this box, so purified's encoding (presumably 2) is unobserved**. `Sha/Pur

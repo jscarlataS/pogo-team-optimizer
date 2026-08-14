@@ -48,42 +48,30 @@ Gastrodon,Kommo-o,Ludicolo,Skeledirge,Cofagrigus,Crustle,Drapion
 503,73,700,982,699,691,28,618,212,110,706,916,423,784,272,911,563,558,452
 ```
 
-## New species only — nothing scanned yet (vs `data/poke_genie_export_updated.csv`)
+## New species only — nothing scanned yet (vs `data/poke_genie_export_updated_with_ul.csv`)
 
-54 of the 70 species above have no specimen in the export. Scanning passes are additive — never wipe Poke Genie, just scan and re-export. Note the match is by dex number: a species listed as scanned may still hide unscanned specimens worth scanning (other regional forms, or newly caught higher-CP ones).
+41 of the 70 species above have no specimen in the export. Scanning passes are additive — never wipe Poke Genie, just scan and re-export. Note the match is by dex number: a species listed as scanned may still hide unscanned specimens worth scanning (other regional forms, or newly caught higher-CP ones).
 
 ### Names
 
-**Chunk 1 of 3** — 21 species, ends with `Steelix` (check that one still matches after pasting):
+**Chunk 1 of 2** — 21 species, ends with `Ampharos` (check that one still matches after pasting):
 
 ```
-Mimikyu,Lickilicky,Corviknight,Tinkaton,Florges,Empoleon,Virizion,Jellicent,Forretress,Zygarde,Feraligatr,Kingdra,Malamar,Walrein,Dondozo,Regidrago,Giratina,Bellibolt,Annihilape,Cresselia,Steelix
+Mimikyu,Lickilicky,Corviknight,Tinkaton,Florges,Empoleon,Jellicent,Forretress,Feraligatr,Kingdra,Malamar,Walrein,Dondozo,Regidrago,Bellibolt,Annihilape,Steelix,Cradily,Oranguru,Runerigus,Ampharos
 ```
 
-**Chunk 2 of 3** — 20 species, ends with `Sylveon` (check that one still matches after pasting):
+**Chunk 2 of 2** — 20 species, ends with `Drapion` (check that one still matches after pasting):
 
 ```
-Cradily,Oranguru,Runerigus,Ampharos,Turtonator,Raikou,Togekiss,Hippowdon,Orthworm,Toucannon,Aromatisse,Golisopod,Gyarados,Hydreigon,Seismitoad,Primarina,Cobalion,Samurott,Tentacruel,Sylveon
-```
-
-**Chunk 3 of 3** — 13 species, ends with `Drapion` (check that one still matches after pasting):
-
-```
-Dudunsparce,Aurorus,Dragalge,Scizor,Weezing,Goodra,Oinkologne,Gastrodon,Kommo-o,Ludicolo,Skeledirge,Cofagrigus,Drapion
+Turtonator,Orthworm,Toucannon,Aromatisse,Golisopod,Hydreigon,Seismitoad,Samurott,Sylveon,Dudunsparce,Aurorus,Dragalge,Goodra,Oinkologne,Gastrodon,Kommo-o,Ludicolo,Skeledirge,Cofagrigus,Drapion
 ```
 
 ### Dex numbers
 
-**Chunk 1 of 2** — 50 species, ends with `784` (check that one still matches after pasting):
+**Chunk 1 of 1** — 41 species, ends with `452` (check that one still matches after pasting):
 
 ```
-778,463,823,959,671,395,640,593,205,718,160,230,687,365,977,895,487,939,979,488,208,346,765,867,181,776,243,468,450,968,733,683,768,130,635,537,730,638,503,73,700,982,699,691,212,110,706,916,423,784
-```
-
-**Chunk 2 of 2** — 4 species, ends with `452` (check that one still matches after pasting):
-
-```
-272,911,563,452
+778,463,823,959,671,395,593,205,160,230,687,365,977,895,939,979,208,346,765,867,181,776,968,733,683,768,635,537,503,700,982,699,691,706,916,423,784,272,911,563,452
 ```
 
 ## Full uncapped strings

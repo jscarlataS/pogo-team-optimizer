@@ -23,8 +23,27 @@ const FORM_TO_REGION: ReadonlyMap<string, RegionTag> = new Map([
 // Escape hatch for rows the dex+form+shadow rule cannot resolve unambiguously
 // (multi-form species like Castform sizes, gendered entries like Meowstic).
 // Key: `${dex}|${form.toLowerCase()}|${shadow ? "shadow" : "normal"}`.
-// Empty so far — resolveSpeciesId fails loudly and names this map when needed.
-const RESOLVE_OVERRIDES: ReadonlyMap<string, string> = new Map();
+// Entries are added only for Form values actually observed in an export —
+// resolveSpeciesId fails loudly and names this map when a new one appears.
+const RESOLVE_OVERRIDES: ReadonlyMap<string, string> = new Map([
+  // Observed 2026-08-14 (UL scanning pass): non-regional formes.
+  ["487|origin|normal", "giratina_origin"],
+  ["487|altered|normal", "giratina_altered"],
+  ["718|10%|normal", "zygarde_10"],
+]);
+
+// Vendor data quirk, verified 2026-08-14 (see data-sources.md): exactly four
+// family.evolutions ids have no pokemon[] entry at the pinned commit — three
+// not-yet-shipped shadow evolutions and one typo ("lycranroc_dusk"). Such
+// targets cannot be ranked or simulated anyway, so skipping them loses
+// nothing. Any OTHER missing id still fails loudly — that is drift detection
+// for a future vendor refresh.
+export const KNOWN_DANGLING_EVOLUTIONS: ReadonlySet<string> = new Set([
+  "kleavor_shadow",
+  "farigiraf_shadow",
+  "wyrdeer_shadow",
+  "lycranroc_dusk",
+]);
 
 function hasTag(entry: GamemasterPokemon, tag: string): boolean {
   return entry.tags?.includes(tag) ?? false;
@@ -111,6 +130,9 @@ export function expandFamily(mon: OwnedPokemon, gm: Gamemaster): Candidate[] {
         visited.add(evoId);
         const evo = gm.pokemonById.get(evoId);
         if (evo === undefined) {
+          if (KNOWN_DANGLING_EVOLUTIONS.has(evoId)) {
+            continue;
+          }
           throw new Error(
             `family.evolutions of ${entry.speciesId} names "${evoId}", ` +
               `which is not in gamemaster.json.`,
