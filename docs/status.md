@@ -1,19 +1,19 @@
 # Status
 
-**Last updated:** 2026-08-14 (session h)
-**Current milestone:** 5 — **Ultra League complete on the full roster**,
-awaiting the user's field verdict. The UL scanning pass is done
-(`data/poke_genie_export_updated_with_ul.csv`, 245 scans, +87); UL pool
-27 → 52 viable. Headline UL teams: optimal
-**Feraligatr(S)+Annihilape+Clefable 82.2**; budget
-**Moltres(G)+Swampert+Melmetal 81.2** (21k dust total, only 3 unanswered
-threats); ready-now **Swampert+Togekiss+Melmetal 81.0** — three CP≈2490
-mons as-is, TMs only. Giratina (Altered) CP2493 is UL #32 at its optimal
-level as scanned. GL regenerated on the grown roster: optimal/ready
-headliners unchanged, budget #1 now Corviknight+Clefable+Hydreigon 80.7.
-League is a first-class value through the whole stack; UL validated like GL
-(exact published-rating reproduction + the `(U)` oracle on all rows).
-CLIs default to the newest .csv in `data/` (loudly logged).
+**Last updated:** 2026-08-24 (session i)
+**Current milestone:** 5 — GL rerun on a grown roster
+(`data/poke_genie_export_updated_gl.csv`, 274 scans, +29 near-1500 mons)
+plus a **direct answer to "give me a different team than my current one"**.
+Headline: the user's fielded **Altaria+Clefable+G-Stunfisk (79.7)** is still
+ready-now **#2 of 57,155** — genuinely near the roster's zero-investment
+ceiling. Best *fully disjoint* ready alternative:
+**Ninetales+Azumarill+Scrafty 79.5** (8 unanswered, but 2 Elite TMs on
+Ninetales); best disjoint **Elite-TM-free**:
+**Azumarill+Gliscor(S)+Raichu(A) 77.9** with only 6 unanswered and a
+completely different threat profile (leaks Ghost/Steel instead of bulky
+Water). **The top-100 viability cutoff again proved too narrow** — it sees
+only 1 of the 29 new scans; all the useful alternatives need
+`--viability-top 600`, which also raises the optimal ceiling 81.8 → 82.2.
 
 ---
 
@@ -96,15 +96,19 @@ B/B/B/A (team 6) and B/D/B/A (team 1).
 
 ## Next action
 
-1. **User: browser cross-check + field verdict** on the UL teams (Team
-   Builder links in `out/teams-ultra.md` carry the 2500 cap); record the
-   verdict here, as with the GL ⭐ checkpoint. The obvious first team to
-   field: ready-now Swampert+Togekiss+Melmetal 81.0 (TM costs only).
-2. **Next /plan chunk:** either Master League (mostly plumbing; needs its own
-   ready/budget/XL semantics) or the scoring-tuning items below — user's
-   call. 41 of 70 UL-meta species remain unscanned per
-   `out/ul-search-strings.md` — presumably unowned; nothing to do unless the
-   user catches one.
+1. **User: field verdict** on whichever alternative they try (see session i
+   below). The pitch: their current team's 10 holes are almost all bulky
+   Water (Feraligatr(S), Jellicent, Pelipper, Lapras(S), Sealeo(S),
+   Blastoise) + Dusclops/Oranguru; Azumarill+Gliscor(S)+Raichu(A) has zero
+   Water leaks and loses instead to Mimikyu/Corsola(G)/Doublade/Dusclops(S)/
+   Swampert/Aegislash — a real change of matchup spread, not a reskin.
+2. **Promote the wider viability pool to the default.** Three independent
+   runs now say top-100 is too narrow (sessions f, h, i). Session i is the
+   strongest evidence yet: 28 of 29 new scans rank 191–3134 and are invisible
+   at the default, yet Scrafty (#283), Gliscor(S) (#286), Togedemaru (#425)
+   and Raichu(A) (#415) carry the best low-hole teams the roster can field.
+   Proposal: default `--viability-top` 100 → 600 (costs ~14 s, matrix cached).
+3. Still open from (h): Master League, or the scoring-tuning items below.
 
 The ⭐ checkpoint is closed (verdict above). The user's stated dust plan:
 play Altaria+Clefable+G-Fisk now; build **Shadow Ninetales** (Vulpix L8
@@ -178,6 +182,33 @@ showed this: ready specimen free at 78.4-team vs 44k Skwovet build at 80.0).
 
 ## Session log
 
+- **2026-08-24 (i)** — **GL rerun on +29 near-1500 scans; "different team"
+  request answered.** New export `poke_genie_export_updated_gl.csv` (274 rows,
+  49-column layout unchanged, no rows removed or changed). 83 tests green
+  before touching anything. Rank lookup on the 29 additions: **only Azumarill
+  (GL #21, 14/15/15 CP1496 L36.5) falls inside the top-100 pool**; the rest
+  land 191–3134 (Machamp(S) 191, Nidoqueen 209, Machamp 229, Starmie 230,
+  Ursaring(S) 255, Victreebel 259, Mew 349, Raichu(A) 415, Togedemaru 425 …).
+  Default run therefore barely moved: pools 43/15/26, optimal still
+  Sableye(S)+Clefable+Charjabug 81.8, budget still Corviknight+Clefable+
+  Hydreigon 80.7, ready still Altaria+Clefable+G-Fisk 79.7 (Azumarill's only
+  showing was ready #6). Re-ran at `--viability-top 600` (pools 115/56/71,
+  247k/28k/57k teams, 14 s): optimal ceiling rises to
+  **Clodsire+Sableye(S)+Abomasnow(S) 82.2** with only 4 unanswered threats.
+  Then enumerated all 57,155 ready teams and filtered by overlap with the
+  fielded trio *and* by Elite-TM cost (`eliteMoves`/`legacyMoves` ∩ ranked
+  moveset, same rule report.ts uses). Findings: current team ranks #2 overall;
+  best disjoint = Ninetales+Azumarill+Scrafty 79.5 / 8 holes but **Ninetales
+  needs Ember + Energy Ball, two Elite TMs** (verified in gamemaster); best
+  disjoint Elite-TM-free = Azumarill+Gliscor(S)+Raichu(A) 77.9 / 6 holes /
+  consistency 86, with Azumarill+Gliscor(S)+Togedemaru 78.4 / **5 holes** but
+  consistency 66 (swingy — the shield-scenario spread is wide). Confirms
+  scoring observation 2 again: several ≤6-hole teams score *below* 10-hole
+  ones (Abomasnow(S)+Poliwrath+Victini: 4 holes, consistency 97, only 76.9).
+  Azumarill, Gliscor(S), Raichu(A), Togedemaru, Nidoqueen and Scrafty all have
+  **no elite/legacy moves at all**, so those teams are pure dust plays.
+  `out/teams.md` regenerated (default pool, --teams 10) and
+  `out/teams-wide600.md` added to the tracked set for phone access.
 - **2026-08-14 (h)** — **UL rerun on the completed roster.** User scanned the
   UL pass and re-exported (245 scans, +87). The loud-failure design earned
   its keep: four new-data surprises, all resolved by observation first —

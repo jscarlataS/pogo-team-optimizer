@@ -1,6 +1,6 @@
 # Great League teams from your roster
 
-- Pipeline: 245 scanned mons → 430 family-expanded candidates → pools: 43 optimal, 15 budget, 26 ready
+- Pipeline: 274 scanned mons → 462 family-expanded candidates → pools: 43 optimal, 15 budget, 26 ready
 - Meta: top 100 GL ranking entries, score-weighted; shield scenarios 0v0/1v1/2v2 weighted 0.3/0.5/0.2
 - Movesets are PvPoke's ranked sets (the export carries none) — listed moves are the TM targets
 - Gamemaster 2026-08-13 20:39:22; ratings >500 are wins
@@ -28,6 +28,11 @@ Also strong in this tier:
 3. Ninetales (Shadow) + Sableye (Shadow) + Clefable — 81.7
 4. Fearow + Sableye (Shadow) + Clefable — 81.7
 5. Sableye (Shadow) + Clefable + Mantine — 81.6
+6. Sableye (Shadow) + Greedent + Clefable — 81.5
+7. Lapras + Sableye (Shadow) + Wigglytuff — 81.5
+8. Sableye (Shadow) + Mantine + Registeel — 81.5
+9. Sableye (Shadow) + Wigglytuff + Registeel — 81.5
+10. Feraligatr (Shadow) + Sableye (Shadow) + Clefable — 81.5
 
 ## Budget — at most 5 levels of power-up per member
 
@@ -52,6 +57,11 @@ Also strong in this tier:
 3. Fearow + Clefable + Malamar — 80.7
 4. Clefable + Mandibuzz + Stunfisk (Galarian) — 80.5
 5. Fearow + Wigglytuff + Registeel — 80.5
+6. Fearow + Clefable + Registeel — 80.3
+7. Corviknight + Clefable + Malamar — 80.2
+8. Wigglytuff + Mandibuzz + Registeel — 80.2
+9. Fearow + Wigglytuff + Stunfisk (Galarian) — 80.2
+10. Wigglytuff + Mandibuzz + Stunfisk (Galarian) — 80.0
 
 ## Ready now — existing Pokémon, zero power-ups
 
@@ -76,21 +86,30 @@ Also strong in this tier:
 3. Blastoise + Clefable + Stunfisk (Galarian) — 79.0
 4. Ninetales + Greedent + Clefable — 78.9
 5. Altaria + Greedent + Clefable — 78.8
+6. Altaria + Azumarill + Stunfisk (Galarian) — 78.8
+7. Ninetales + Lapras + Clefable — 78.7
+8. Lapras + Clefable + Stunfisk (Galarian) — 78.6
+9. Altaria + Ninetales + Clefable — 78.5
+10. Talonflame + Greedent + Clefable — 78.4
 
 ## Recurring members across the top optimal teams
 
-- Sableye (Shadow) — in 5 of the top 5 optimal teams
-- Clefable — in 5 of the top 5 optimal teams
+- Sableye (Shadow) — in 10 of the top 10 optimal teams
+- Clefable — in 7 of the top 10 optimal teams
+- Lapras — in 2 of the top 10 optimal teams
+- Mantine — in 2 of the top 10 optimal teams
+- Wigglytuff — in 2 of the top 10 optimal teams
+- Registeel — in 2 of the top 10 optimal teams
 
 ## Meta-relevant but unbuildable (already over 1500)
 
+- Kingdra from Seadra CP1483 L25
 - Hydreigon from Deino CP497 L17.5
 - Hydreigon from Deino CP590 L20
 - Melmetal from Melmetal CP3456 L37.5
 - Guzzlord from Guzzlord CP1607 L20
 - Swampert from Swampert CP2495 L29.5
 - Milotic from Milotic CP1706 L20
-- Kingdra from Seadra CP1483 L25
 - Lapras from Lapras CP1844 L25.5
 - Blastoise from Blastoise CP1522 L22
 - Blastoise from Blastoise CP1735 L25
