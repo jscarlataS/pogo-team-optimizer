@@ -124,6 +124,13 @@ The touchpoint list below was verified accurate at implementation (2026-08-14),
 with one correction: "the matrix cache already keys on every input that
 changes" was **wrong** — the league cap was missing from the key even though
 opponent default builds derive from it; fixed by adding the cap to the key.
+It was wrong a second way, found 2026-08-25: the key hashed
+`ranking.moveset` rather than the moves the build actually carries. Those
+coincide everywhere in the app, but a moveset what-if (is Lugia's Aeroblast
+Elite TM worth it?) builds the same specimen with different moves and every
+variant collided on one cache entry — 20 movesets, one identical score. The
+key now hashes the build's own move ids; the cache-hit guard still only
+length-checks, which is why the collision returned silently.
 Original touchpoints, all done: `PvpokeSim` `setCP(1500)`;
 `selectReadyCandidates` 1500 cap; `loadRankings1500`; GL-only `species-list`;
 GL report/tier labels; plus the Team Builder URL's hardcoded `/all/1500/`.

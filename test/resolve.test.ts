@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { loadGamemaster } from "../src/data/pvpoke.js";
 import type { Gamemaster } from "../src/data/pvpoke.js";
-import { deriveBaseName } from "../src/species.js";
+import { deriveBaseName, sameSpeciesName } from "../src/species.js";
 import { defaultRosterPath, loadRoster, parseRosterCsv } from "../src/roster.js";
 import type { LeagueAnalysis, OwnedPokemon } from "../src/roster.js";
 import {
@@ -64,7 +64,7 @@ function expansionCoversPokeGenieTarget(
     const entry = g.pokemonById.get(speciesId);
     return (
       entry !== undefined &&
-      deriveBaseName(entry.speciesName) === wantName &&
+      sameSpeciesName(deriveBaseName(entry.speciesName), wantName) &&
       regionOfId(speciesId) === (wantRegion ?? null)
     );
   };

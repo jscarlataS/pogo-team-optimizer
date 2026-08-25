@@ -373,10 +373,16 @@ Marked for PvP use
 
 Observed facts — whole-file checks over all 149 rows, not row sampling:
 
-- **Moves are absent.** `Quick Move` / `Charge Move` / `Charge Move 2` are empty
-  in every row, despite all scans being detail-page scans. The old claim that a
-  detail scan yields moves did **not** survive contact, at least for the export
-  path. Whether the app holds them in its own records is a new open question.
+- **Moves are almost always absent.** `Quick Move` / `Charge Move` /
+  `Charge Move 2` were empty in every one of the 149 rows here, despite all
+  scans being detail-page scans. The old claim that a detail scan yields moves
+  did **not** survive contact, at least for the export path.
+  **Amended 2026-08-25:** the 378-row export has exactly **two** rows with a
+  fast and a first charged move (Magmortar, Rookidee; `Charge Move 2` still
+  empty everywhere) — so the column is not structurally dead, it is just
+  almost always unpopulated. Nothing downstream changes: scoring uses PvPoke's
+  ranked sets by standing policy (see open-questions.md), and the parser
+  ignores these columns.
 - **IVs are exact single integers (0–15) in every row**, and
   `Level Min == Level Max` everywhere (half levels appear as `x.5`). No range
   representation exists in this file; if ambiguity is ever exported, the Min/Max
@@ -399,16 +405,30 @@ Observed facts — whole-file checks over all 149 rows, not row sampling:
   U-block. So `Name (U)`/`Form (U)` give the same free family-expansion oracle
   for Ultra that `(G)` gave for Great, on 151 of 158 rows.
 - Enums observed: `Form` ∈ {empty, `Normal`, `Alola`, `Galar`, `Paldea`,
-  `Origin`, `Altered`, `10%`} — the last three observed 2026-08-14 (UL
-  scanning pass: Giratina formes, Zygarde 10%); they are non-regional formes,
-  handled by `RESOLVE_OVERRIDES` in `src/resolve.ts`, not `FORM_TO_REGION`.
+  `Origin`, `Altered`, `10%`, `Aria`} — `Origin`/`Altered`/`10%` observed
+  2026-08-14 (UL scanning pass: Giratina formes, Zygarde 10%), `Aria`
+  (Meloetta) 2026-08-25; they are non-regional formes, handled by
+  `RESOLVE_OVERRIDES` in `src/resolve.ts`, not `FORM_TO_REGION`.
   Empty
-  and `Normal` both mean base form. `Gender` ∈ {♀, ♂, empty}. `Lucky`,
+  and `Normal` both mean base form.
+  **`Normal` is itself ambiguous for any species whose gamemaster line ships a
+  second released forme** (observed 2026-08-25: Thundurus, Landorus, Kyurem,
+  Palkia, Dialga, Mewtwo — vs Therian, Black/White, Origin, Origin, Armored).
+  Poke Genie names the alternate forme explicitly, exactly as it does for
+  Giratina, so `Normal` always means the base one; confirmed row by row
+  against each scan's own `Name (U)`/`Form (U)`. No gamemaster tag separates
+  these pairs, so each is a `RESOLVE_OVERRIDES` entry rather than a rule. `Gender` ∈ {♀, ♂, empty}. `Lucky`,
   `Favorite`, `Shadow/Purified` are 0/1 flags — **no purified Pokémon exists in
   this box, so purified's encoding (presumably 2) is unobserved**. `Sha/Pur
   (G/U/L)` takes 0/1/2/empty; semantics unconfirmed (1 correlates with shadow, 2
   appears only on shadows — possibly "ranked as purified"); the pipeline does not
   need it.
+- **Name spellings differ from the gamemaster's.** `Sirfetch’d` uses the
+  typographic apostrophe U+2019 where gamemaster.json has ASCII `'`
+  (`Farfetch'd` in the same file uses ASCII) — observed 2026-08-25. Names are
+  not used for resolution (dex + form + shadow is), but the cross-checks
+  against Poke Genie's own target name are, so those compare through
+  `sameSpeciesName()` in `src/species.ts`, which folds the apostrophe variants.
 - `Catch Date` is `M/D/YYYY` or empty. `Weight`/`Height` are almost always empty
   (1 row has them). `Marked for PvP use` was empty in every row. `Dust` is the
   current power-up dust cost. `Index` counts up from the most recent scan.

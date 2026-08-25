@@ -1,6 +1,6 @@
 # Great League teams from your roster
 
-- Pipeline: 274 scanned mons → 462 family-expanded candidates → pools: 115 optimal, 56 budget, 71 ready
+- Pipeline: 378 scanned mons → 569 family-expanded candidates → pools: 115 optimal, 56 budget, 71 ready
 - Meta: top 100 GL ranking entries, score-weighted; shield scenarios 0v0/1v1/2v2 weighted 0.3/0.5/0.2
 - Movesets are PvPoke's ranked sets (the export carries none) — listed moves are the TM targets
 - Gamemaster 2026-08-13 20:39:22; ratings >500 are wins
@@ -109,59 +109,115 @@ Also strong in this tier:
 
 ## Meta-relevant but unbuildable (already over 1500)
 
+- Hitmontop from Hitmontop CP1504 L25
+- Flygon from Flygon CP1508 L20
+- Lucario from Lucario CP1509 L20
+- Slowbro from Slowbro CP1510 L22.5
+- Blastoise from Blastoise CP1522 L22
+- Farfetch'd (Galarian) from Farfetch'd CP1522 L34
+- Sirfetch'd from Farfetch'd CP1522 L34
+- Wigglytuff from Wigglytuff CP1523 L28
+- Kabutops from Kabutops CP1526 L20
+- Scizor from Scyther CP1527 L20
+- Lucario from Lucario CP1532 L20
+- Swalot from Swalot CP1554 L28
+- Primarina from Primarina CP1556 L18
+- Cresselia from Cresselia CP1601 L20
+- Guzzlord from Guzzlord CP1607 L20
+- Greninja from Greninja CP1607 L22.5
+- Cresselia from Cresselia CP1620 L20
+- Charizard from Charizard CP1631 L20
+- Suicune from Suicune CP1650 L20
+- Scizor from Scizor CP1701 L20
+- Articuno from Articuno CP1705 L20
+- Milotic from Milotic CP1706 L20
+- Machamp from Machamp CP1711 L20
+- Snorlax from Snorlax CP1718 L19
+- Dewgong from Dewgong CP1731 L31.5
+- Lairon from Lairon CP1731 L30
+- Regirock from Regirock CP1735 L20
+- Blastoise from Blastoise CP1735 L25
+- Charizard from Charizard CP1844 L22.5
+- Aerodactyl from Aerodactyl CP1868 L26
+- Gyarados from Gyarados CP1887 L20
+- Thundurus (Incarnate) from Thundurus CP1888 L20
+- Gyarados from Gyarados CP1895 L20
+- Gyarados from Gyarados CP1897 L20
+- Gyarados from Gyarados CP1897 L20
+- Raikou from Raikou CP1920 L20
+- Charizard from Charizard CP1922 L25
+- Lapras from Lapras CP1956 L30
+- Zapdos from Zapdos CP1970 L20
+- Venusaur from Venusaur CP1982 L26
+- Latias from Latias CP1986 L20
+- Sceptile from Sceptile CP2000 L25.5
+- Primarina from Primarina CP2052 L25
+- Gigalith from Gigalith CP2070 L24
+- Lugia from Lugia CP2096 L20
+- Lugia from Lugia CP2102 L20
+- Snorlax from Snorlax CP2113 L25
+- Kartana from Kartana CP2141 L21
+- Primarina from Primarina CP2141 L25
+- Tyranitar from Tyranitar CP2148 L20
+- Latios from Latios CP2149 L20
+- Tyranitar from Tyranitar CP2166 L20
+- Rayquaza from Rayquaza CP2169 L20
+- Rayquaza from Rayquaza CP2174 L20
+- Rayquaza from Rayquaza CP2179 L20
+- Rayquaza from Rayquaza CP2179 L20
+- Toxicroak from Toxicroak CP2219 L33
+- Vaporeon from Vaporeon CP2262 L26
+- Rhyperior from Rhydon CP2297 L25.5
+- Scizor from Scizor CP2300 L27
+- Machamp from Machamp CP2304 L29
+- Gyarados from Gyarados CP2348 L25.5
+- Charizard from Charizard CP2436 L33.5
+- Gallade from Gallade CP2461 L28
+- Sirfetch'd from Sirfetch’d CP2467 L29
+- Vaporeon from Vaporeon CP2472 L28
+- Roserade from Roserade CP2474 L29.5
+- Snorlax from Snorlax CP2476 L27
+- Lugia from Lugia CP2478 L24
+- Primarina from Primarina CP2481 L30
+- Escavalier from Escavalier CP2484 L30.5
+- Melmetal from Melmetal CP2489 L26
+- Machamp from Machamp CP2493 L30.5
+- Togekiss from Togekiss CP2495 L26.5
+- Primarina from Primarina CP2495 L29
+- Swampert from Swampert CP2495 L29.5
+- Obstagoon from Obstagoon CP2496 L36.5
+- Hariyama from Hariyama CP2496 L32.5
+- Blaziken from Blaziken CP2498 L32
+- Venusaur from Venusaur CP2500 L37.5
 - Kingdra from Seadra CP1483 L25
 - Gyarados from Gyarados CP2796 L30
-- Vaporeon from Vaporeon CP2262 L26
 - Vaporeon from Vaporeon CP2729 L32
-- Gyarados from Gyarados CP2348 L25.5
-- Vaporeon from Vaporeon CP2472 L28
 - Vaporeon from Vaporeon CP2611 L30
 - Hydreigon from Deino CP497 L17.5
-- Scizor from Scizor CP1701 L20
-- Scizor from Scyther CP1527 L20
-- Scizor from Scizor CP2300 L27
 - Hydreigon from Deino CP590 L20
-- Gyarados from Gyarados CP1897 L20
 - Melmetal from Melmetal CP3456 L37.5
 - Gyarados from Magikarp CP156 L20
-- Gyarados from Gyarados CP1887 L20
-- Gyarados from Gyarados CP1895 L20
 - Gyarados from Magikarp CP122 L24
 - Gyarados from Gyarados CP3127 L35
-- Gyarados from Gyarados CP1897 L20
-- Guzzlord from Guzzlord CP1607 L20
 - Gyarados from Magikarp CP253 L35
 - Weezing from Koffing CP923 L27
 - Aurorus from Amaura CP754 L20
 - Primarina from Popplio CP671 L23
-- Primarina from Primarina CP2052 L25
-- Primarina from Primarina CP2141 L25
 - Primarina from Popplio CP641 L24
-- Primarina from Primarina CP1556 L18
 - Primarina from Popplio CP581 L21
 - Primarina from Primarina CP2662 L30
-- Primarina from Primarina CP2481 L30
 - Primarina from Popplio CP603 L22
 - Primarina from Popplio CP694 L22
 - Gyarados from Magikarp CP130 L22
 - Oinkologne from Lechonk CP557 L28
-- Swampert from Swampert CP2495 L29.5
 - Giratina (Origin) from Giratina CP2494 L24
 - Annihilape from Primeape CP1286 L20
-- Milotic from Milotic CP1706 L20
 - Togekiss from Togepi CP355 L20
-- Raikou from Raikou CP1920 L20
-- Togekiss from Togekiss CP2495 L26.5
 - Togekiss from Togetic CP816 L17
-- Cresselia from Cresselia CP1620 L20
-- Cresselia from Cresselia CP1601 L20
 - Lapras from Lapras CP1844 L25.5
-- Blastoise from Blastoise CP1522 L22
-- Blastoise from Blastoise CP1735 L25
 - Empoleon from Prinplup CP954 L20
 - Moltres (Galarian) from Moltres CP2241 L25.5
 - Dusknoir from Dusclops CP1261 L29
-- Lapras from Lapras CP1956 L30
 - Blastoise from Squirtle CP675 L29
 - Talonflame from Fletchling CP588 L27
 - Talonflame from Fletchling CP689 L31
@@ -171,9 +227,6 @@ Also strong in this tier:
 - Crustle from Crustle CP1509 L24
 - Salamence from Bagon CP484 L15
 - Hydreigon from Deino CP582 L20
-- Melmetal from Melmetal CP2489 L26
-- Wigglytuff from Wigglytuff CP1523 L28
-- Dewgong from Dewgong CP1731 L31.5
 - Clefable from Clefable CP1876 L29
 - Ninetales from Vulpix CP639 L26
 - Dragonite from Dragonite CP3321 L32

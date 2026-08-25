@@ -1,6 +1,6 @@
 # Great League teams from your roster
 
-- Pipeline: 274 scanned mons → 462 family-expanded candidates → pools: 43 optimal, 15 budget, 26 ready
+- Pipeline: 378 scanned mons → 569 family-expanded candidates → pools: 43 optimal, 15 budget, 26 ready
 - Meta: top 100 GL ranking entries, score-weighted; shield scenarios 0v0/1v1/2v2 weighted 0.3/0.5/0.2
 - Movesets are PvPoke's ranked sets (the export carries none) — listed moves are the TM targets
 - Gamemaster 2026-08-13 20:39:22; ratings >500 are wins
@@ -103,27 +103,27 @@ Also strong in this tier:
 
 ## Meta-relevant but unbuildable (already over 1500)
 
+- Blastoise from Blastoise CP1522 L22
+- Wigglytuff from Wigglytuff CP1523 L28
+- Guzzlord from Guzzlord CP1607 L20
+- Milotic from Milotic CP1706 L20
+- Dewgong from Dewgong CP1731 L31.5
+- Blastoise from Blastoise CP1735 L25
+- Lapras from Lapras CP1956 L30
+- Melmetal from Melmetal CP2489 L26
+- Swampert from Swampert CP2495 L29.5
 - Kingdra from Seadra CP1483 L25
 - Hydreigon from Deino CP497 L17.5
 - Hydreigon from Deino CP590 L20
 - Melmetal from Melmetal CP3456 L37.5
-- Guzzlord from Guzzlord CP1607 L20
-- Swampert from Swampert CP2495 L29.5
-- Milotic from Milotic CP1706 L20
 - Lapras from Lapras CP1844 L25.5
-- Blastoise from Blastoise CP1522 L22
-- Blastoise from Blastoise CP1735 L25
 - Empoleon from Prinplup CP954 L20
 - Moltres (Galarian) from Moltres CP2241 L25.5
 - Dusknoir from Dusclops CP1261 L29
-- Lapras from Lapras CP1956 L30
 - Blastoise from Squirtle CP675 L29
 - Talonflame from Fletchling CP588 L27
 - Talonflame from Fletchling CP689 L31
 - Crustle from Crustle CP1509 L24
 - Hydreigon from Deino CP582 L20
-- Melmetal from Melmetal CP2489 L26
-- Wigglytuff from Wigglytuff CP1523 L28
-- Dewgong from Dewgong CP1731 L31.5
 - Clefable from Clefable CP1876 L29
 - Ninetales from Vulpix CP639 L26

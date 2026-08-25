@@ -41,10 +41,28 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CACHE_DIR = join(REPO_ROOT, "out", "cache");
 
 /**
+ * The moves the build actually carries. Everywhere in the app that is exactly
+ * `v.ranking.moveset`, but keying on the ranked set instead would make two
+ * builds of the same specimen with different moves hash identically — a
+ * moveset what-if would silently read the other one's cached ratings.
+ */
+function buildMoveIds(build: ViableCandidate["build"]): string[] {
+  const b = build as {
+    fastMove?: { moveId?: string };
+    chargedMoves?: Array<{ moveId?: string }>;
+  };
+  return [
+    b.fastMove?.moveId ?? "?",
+    ...(b.chargedMoves ?? []).map((m) => m?.moveId ?? "?"),
+  ];
+}
+
+/**
  * Cache identity: everything the ratings are a pure function of — vendored
  * gamemaster version, league CP cap (opponent default builds derive from it
  * via battle.getCP()), opponent pool with movesets, scenario set, and each
- * candidate's exact build (species, IVs, level, moveset).
+ * candidate's exact build (species, IVs, level, and the moves it actually
+ * carries — see buildMoveIds).
  */
 function cacheKey(
   timestamp: string,
@@ -61,7 +79,7 @@ function cacheKey(
       v.candidate.targetSpeciesId,
       v.candidate.owned.ivs,
       v.build.level,
-      v.ranking.moveset,
+      buildMoveIds(v.build),
     ]),
   });
   return createHash("sha256").update(material).digest("hex").slice(0, 16);

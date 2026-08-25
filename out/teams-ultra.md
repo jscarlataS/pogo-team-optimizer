@@ -1,6 +1,6 @@
 # Ultra League teams from your roster
 
-- Pipeline: 245 scanned mons → 430 family-expanded candidates → pools: 52 optimal, 7 budget, 27 ready
+- Pipeline: 378 scanned mons → 569 family-expanded candidates → pools: 52 optimal, 7 budget, 27 ready
 - Meta: top 100 UL ranking entries, score-weighted; shield scenarios 0v0/1v1/2v2 weighted 0.3/0.5/0.2
 - Movesets are PvPoke's ranked sets (the export carries none) — listed moves are the TM targets
 - Gamemaster 2026-08-13 20:39:22; ratings >500 are wins
@@ -28,6 +28,9 @@ Also strong in this tier:
 3. Virizion + Empoleon + Dusknoir — 82.1
 4. Virizion + Feraligatr (Shadow) + Ampharos — 82.1
 5. Virizion + Dusknoir + Lapras — 82.1
+6. Virizion + Empoleon + Crustle — 82.1
+7. Feraligatr (Shadow) + Clefable + Cobalion — 82.0
+8. Empoleon + Annihilape + Clefable — 82.0
 
 ## Budget — at most 5 levels of power-up per member
 
@@ -50,8 +53,11 @@ In-game search: `Moltres,Swampert,Melmetal`
 Also strong in this tier:
 2. Swampert + Togekiss + Melmetal — 81.0
 3. Giratina (Altered) + Swampert + Melmetal — 80.7
-4. Giratina (Altered) + Melmetal + Primarina — 80.6
+4. Giratina (Altered) + Melmetal + Primarina — 80.7
 5. Virizion + Swampert + Melmetal — 79.8
+6. Giratina (Altered) + Togekiss + Melmetal — 79.2
+7. Moltres (Galarian) + Melmetal + Primarina — 79.2
+8. Virizion + Melmetal + Primarina — 79.0
 
 ## Ready now — existing Pokémon, zero power-ups
 
@@ -73,16 +79,21 @@ In-game search: `Swampert,Togekiss,Melmetal`
 
 Also strong in this tier:
 2. Giratina (Altered) + Swampert + Melmetal — 80.7
-3. Giratina (Altered) + Melmetal + Primarina — 80.6
+3. Giratina (Altered) + Melmetal + Primarina — 80.7
 4. Moltres (Galarian) + Swampert + Melmetal — 80.1
 5. Swampert + Gyarados + Melmetal — 79.6
+6. Giratina (Altered) + Gyarados + Melmetal — 79.3
+7. Giratina (Altered) + Togekiss + Melmetal — 79.2
+8. Swampert + Melmetal + Primarina — 79.0
 
 ## Recurring members across the top optimal teams
 
-- Feraligatr (Shadow) — in 3 of the top 5 optimal teams
-- Virizion — in 3 of the top 5 optimal teams
-- Annihilape — in 2 of the top 5 optimal teams
-- Dusknoir — in 2 of the top 5 optimal teams
+- Feraligatr (Shadow) — in 4 of the top 8 optimal teams
+- Virizion — in 4 of the top 8 optimal teams
+- Annihilape — in 3 of the top 8 optimal teams
+- Clefable — in 3 of the top 8 optimal teams
+- Empoleon — in 3 of the top 8 optimal teams
+- Dusknoir — in 2 of the top 8 optimal teams
 
 ## Meta-relevant but unbuildable (already over 2500)
 

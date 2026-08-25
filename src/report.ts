@@ -1,5 +1,5 @@
 import type { Gamemaster, League, RankingEntry } from "./data/pvpoke.js";
-import { deriveBaseName } from "./species.js";
+import { deriveBaseName, sameSpeciesName } from "./species.js";
 import type { Candidate } from "./resolve.js";
 import type { MetaProfile, ScoreConfig, TeamScore } from "./score.js";
 import type { ViableCandidate } from "./viability.js";
@@ -92,7 +92,7 @@ function buildCostLine(
     // this league is the same family member we chose (matched by base name).
     const target = gm.pokemonById.get(v.candidate.targetSpeciesId);
     const pg = league.key === "great" ? o.greatLeague : o.ultraLeague;
-    if (pg && target && deriveBaseName(target.speciesName) === pg.targetName) {
+    if (pg && target && sameSpeciesName(deriveBaseName(target.speciesName), pg.targetName)) {
       if (pg.dustCost > 0 || pg.candyCost > 0) {
         parts.push(`${pg.dustCost.toLocaleString("en-US")} dust + ${pg.candyCost} candy`);
       } else {

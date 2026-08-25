@@ -23,6 +23,17 @@ export function deriveBaseName(speciesName: string): string {
   return speciesName.replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
 }
 
+// Poke Genie writes some names with a typographic apostrophe ("Sirfetch’d",
+// U+2019) where the gamemaster uses the ASCII one ("Sirfetch'd") — observed
+// 2026-08-25. Same species, different spelling, so any cross-check against
+// Poke Genie's own target name has to compare on a folded form.
+const APOSTROPHES = /[\u2018\u2019\u02BC\u2032]/g;
+
+/** True when two spellings name the same species modulo apostrophe style. */
+export function sameSpeciesName(a: string, b: string): boolean {
+  return a.replace(APOSTROPHES, "'") === b.replace(APOSTROPHES, "'");
+}
+
 export function resolveToBase(speciesId: string, gm: Gamemaster): BaseSpecies {
   let entry = gm.pokemonById.get(speciesId);
   if (!entry) {

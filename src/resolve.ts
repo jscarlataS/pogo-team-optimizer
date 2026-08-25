@@ -30,6 +30,22 @@ const RESOLVE_OVERRIDES: ReadonlyMap<string, string> = new Map([
   ["487|origin|normal", "giratina_origin"],
   ["487|altered|normal", "giratina_altered"],
   ["718|10%|normal", "zygarde_10"],
+  // Observed 2026-08-25 (second UL scanning pass): Meloetta's Aria forme.
+  // Pirouette is unreleased in the vendor data, so the dex rule would resolve
+  // this today; the explicit entry keeps it correct if that ever changes.
+  ["648|aria|normal", "meloetta_aria"],
+  // Observed 2026-08-25: legendaries whose gamemaster line carries a second
+  // released forme. Poke Genie writes "Normal" for the base forme and names
+  // the alternate one explicitly (as it does with Giratina's Origin/Altered),
+  // so "Normal" here always means the base. Confirmed row by row against each
+  // scan's own `Name (U)`/`Form (U)` PvP target. No tag distinguishes these
+  // pairs in the vendor data, so each one is listed rather than ruled.
+  ["642|normal|normal", "thundurus_incarnate"], // vs thundurus_therian
+  ["645|normal|normal", "landorus_incarnate"], // vs landorus_therian
+  ["646|normal|normal", "kyurem"], // vs kyurem_black / kyurem_white
+  ["484|normal|normal", "palkia"], // vs palkia_origin
+  ["483|normal|normal", "dialga"], // vs dialga_origin
+  ["150|normal|normal", "mewtwo"], // vs mewtwo_armored
 ]);
 
 // Vendor data quirk, verified 2026-08-14 (see data-sources.md): exactly four

@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { loadGamemaster } from "../src/data/pvpoke.js";
 import type { RankingEntry } from "../src/data/pvpoke.js";
-import { collectBaseSpecies, deriveBaseName, resolveToBase } from "../src/species.js";
+import {
+  collectBaseSpecies,
+  deriveBaseName,
+  resolveToBase,
+  sameSpeciesName,
+} from "../src/species.js";
 
 // All expectations below were read from the vendored gamemaster (pinned commit,
 // timestamp 2026-08-13) — see docs/reference/data-sources.md. A failure after a
@@ -14,6 +19,17 @@ const entry = (speciesId: string): RankingEntry => ({
   score: 0,
   scores: [0, 0, 0, 0, 0, 0],
   moveset: ["FAST", "CHARGED"],
+});
+
+describe("sameSpeciesName", () => {
+  it("folds Poke Genie's typographic apostrophe onto the gamemaster's ASCII one", () => {
+    expect(sameSpeciesName("Sirfetch\u2019d", "Sirfetch'd")).toBe(true);
+    expect(sameSpeciesName("Farfetch'd", "Farfetch'd")).toBe(true);
+  });
+
+  it("still separates genuinely different names", () => {
+    expect(sameSpeciesName("Sirfetch'd", "Farfetch'd")).toBe(false);
+  });
 });
 
 describe("deriveBaseName", () => {
